@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup Site Gemini</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Réservez votre salle de répétition</h1>
+            <p>Utilisez notre assistant IA pour trouver l'espace parfait.</p>
+            <button id="theme-toggle" aria-label="Changer le thème">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            </button>
+        </header>
+        <div class="main-content">
+            <div class="left-panel">
+                <main class="chat-container">
+                    <div id="chat-box">
+                        <div class="message gemini-message">Bonjour ! Je suis votre assistant de réservation. Que cherchez-vous ?</div>
+                    </div>
+                    <div id="loading-indicator" class="hidden">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                </main>
+                <footer>
+                    <div class="input-area">
+                        <input type="text" id="prompt-input" placeholder="Ex: une salle de danse pour 2 personnes demain..." autocomplete="off">
+                        <button id="send-button" aria-label="Envoyer le message">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                        </button>
+                    </div>
+                </footer>
+            </div>
+            <div class="right-panel">
+                <div class="slots-container">
+                    <div class="slots-header">
+                        <h3>Salles disponibles à Paris</h3>
+                        <button id="reset-search-button">Réinitialiser</button>
+                    </div>
+                    <div class="slots-grid">
+                        <div class="slot" id="studio-a">
+                            <div class="slot-date">Aujourd'hui</div>
+                            <div class="slot-details"><span class="slot-surface">60m²</span><span class="slot-tariff">40€/h</span></div>
+                            <div class="slot-name">Studio de la Cité (Danse)</div>
+                            <div class="slot-time">10:00 - 12:00</div>
+                            <div class="slot-equip">💃 Miroirs, 🔊 Son</div>
+                        </div>
+                        <div class="slot" id="salle-b">
+                            <div class="slot-date">Aujourd'hui</div>
+                            <div class="slot-details"><span class="slot-surface">30m²</span><span class="slot-tariff">35€/h</span></div>
+                            <div class="slot-name">Le Local Répétition (Musique)</div>
+                            <div class="slot-time">14:00 - 16:00</div>
+                            <div class="slot-equip">🎸 Amplis, 🥁 Batterie</div>
+                        </div>
+                        <div class="slot" id="plateau-c">
+                            <div class="slot-date">Demain</div>
+                            <div class="slot-details"><span class="slot-surface">100m²</span><span class="slot-tariff">60€/h</span></div>
+                            <div class="slot-name">Théâtre de l'Atelier (Scène)</div>
+                            <div class="slot-time">15:00 - 18:00</div>
+                            <div class="slot-equip">💡 Lumières, 🎭 Scène</div>
+                        </div>
+                        <div class="slot" id="studio-d">
+                            <div class="slot-date">Demain</div>
+                            <div class="slot-details"><span class="slot-surface">25m²</span><span class="slot-tariff">30€/h</span></div>
+                            <div class="slot-name">Le Bœuf sur le Toit (Musique)</div>
+                            <div class="slot-time">19:00 - 21:00</div>
+                            <div class="slot-equip">🎹 Piano, 🎤 Micros</div>
+                        </div>
+                        <div class="slot" id="studio-e">
+                            <div class="slot-date">Aujourd'hui</div>
+                            <div class="slot-details"><span class="slot-surface">20m²</span><span class="slot-tariff">45€/h</span></div>
+                            <div class="slot-name">L'Espace Sonore (Enregistrement)</div>
+                            <div class="slot-time">18:00 - 20:00</div>
+                            <div class="slot-equip">🎤 Micros, 🎧 Casques</div>
+                        </div>
+                        <div class="slot" id="studio-f">
+                            <div class="slot-date">Ce soir</div>
+                            <div class="slot-details"><span class="slot-surface">70m²</span><span class="slot-tariff">50€/h</span></div>
+                            <div class="slot-name">La Scène Ouverte (Théâtre)</div>
+                            <div class="slot-time">20:00 - 23:00</div>
+                            <div class="slot-equip">🎭 Scène, 🪑 Chaises</div>
+                        </div>
+                        <div class="slot" id="studio-g">
+                            <div class="slot-date">Demain</div>
+                            <div class="slot-details"><span class="slot-surface">50m²</span><span class="slot-tariff">35€/h</span></div>
+                            <div class="slot-name">Le Parquet Flottant (Danse)</div>
+                            <div class="slot-time">09:00 - 11:00</div>
+                            <div class="slot-equip">💃 Miroirs, 🩰 Barre</div>
+                        </div>
+                        <div class="slot" id="studio-h">
+                            <div class="slot-date">Demain</div>
+                            <div class="slot-details"><span class="slot-surface">35m²</span><span class="slot-tariff">40€/h</span></div>
+                            <div class="slot-name">Le Studio Luna-Rossa (Musique)</div>
+                            <div class="slot-time">11:00 - 13:00</div>
+                            <div class="slot-equip">🎸 Amplis, 🎹 Piano</div>
+                        </div>
+                        <div class="slot" id="studio-i">
+                            <div class="slot-date">Après-demain</div>
+                            <div class="slot-details"><span class="slot-surface">80m²</span><span class="slot-tariff">55€/h</span></div>
+                            <div class="slot-name">Le Loft Créatif (Mixte)</div>
+                            <div class="slot-time">10:00 - 14:00</div>
+                            <div class="slot-equip">📽️ Projecteur, 🎨 Espace vide</div>
+                        </div>
+                        <div class="slot" id="studio-j">
+                            <div class="slot-date">Après-demain</div>
+                            <div class="slot-details"><span class="slot-surface">40m²</span><span class="slot-tariff">40€/h</span></div>
+                            <div class="slot-name">La Cave à Jazz (Musique)</div>
+                            <div class="slot-time">21:00 - 00:00</div>
+                            <div class="slot-equip">🎷 Saxophone, 🎹 Piano, 🥁 Batterie</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/script.js"></script>
+</body>
+</html>
