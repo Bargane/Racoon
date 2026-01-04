@@ -1,29 +1,30 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
 
 :root {
-    --background-color: #f4f5f7;
+    /* Palette sobre et élégante */
+    --background-color: #f8f9fa;
     --container-bg: #ffffff;
-    --secondary-bg: #f4f5f7;
-    --user-msg-bg: #0084ff;
-    --gemini-msg-bg: #e5e7eb;
-    --text-color: #111827;
-    --text-muted-color: #6b7280;
+    --secondary-bg: #f1f3f5;
+    --accent-color: #4a6a5f; /* Vert sauge */
+    --accent-color-light: #e9f0ee;
+    --text-color: #212529;
+    --text-muted-color: #6c757d;
     --user-text-color: #ffffff;
-    --border-color: #e5e7eb;
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    --icon-color: #6b7280;
+    --border-color: #dee2e6;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --icon-color: #495057;
 }
 
 body[data-theme='dark'] {
-    --background-color: #111827;
-    --container-bg: #1f2937;
-    --secondary-bg: #374151;
-    --user-msg-bg: #3b82f6;
-    --gemini-msg-bg: #4b5563;
+    --background-color: #181a1b;
+    --container-bg: #202324;
+    --secondary-bg: #2c2f30;
+    --accent-color: #78a899;
+    --accent-color-light: #313d39;
     --text-color: #f9fafb;
     --text-muted-color: #9ca3af;
-    --border-color: #374151;
-    --icon-color: #9ca3af;
+    --border-color: #3a3f41;
+    --icon-color: #adb5bd;
 }
 
 body {
@@ -47,15 +48,46 @@ body {
 
 header {
     position: relative;
-    padding: 1rem 1.5rem;
+    padding: 1rem 1.5rem 2rem; /* Augmentation du padding bas pour la courbe */
     border-bottom: 1px solid var(--border-color);
     text-align: center;
     transition: border-color 0.3s ease;
+    /* Ajout d'un fond SVG subtil */
+    background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle fill='%23000' cx='10' cy='10' r='1' fill-opacity='0.08'/%3E%3C/svg%3E");
+    background-color: var(--container-bg);
+    /* Forme ovale en bas */
+    border-radius: 0 0 50% 50% / 0 0 30px 30px;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.logo-img {
+    width: 80px; /* Taille ajustée pour un meilleur équilibre visuel */
+    height: 80px;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+/* Gestion de l'affichage du logo par thème */
+.logo-dark-theme {
+    display: none;
+}
+
+body[data-theme='dark'] .logo-light-theme {
+    display: none;
+}
+body[data-theme='dark'] .logo-dark-theme {
+    display: block;
 }
 
 header h1 {
-    margin: 0;
-    font-size: 1.5rem;
+    margin: 0; /* Marge négative pour rapprocher le titre du logo */
+    font-size: 1.75rem;
     font-weight: 700;
     color: var(--text-color);
     transition: color 0.3s ease;
@@ -125,14 +157,14 @@ header p {
 }
 
 .user-message {
-    background-color: var(--user-msg-bg);
+    background-color: var(--accent-color);
     color: var(--user-text-color);
     align-self: flex-end;
     border-bottom-right-radius: 4px;
 }
 
 .gemini-message {
-    background-color: var(--gemini-msg-bg);
+    background-color: var(--secondary-bg);
     color: var(--text-color);
     transition: background-color 0.3s ease, color 0.3s ease;
     align-self: flex-start;
@@ -175,7 +207,7 @@ header p {
 }
 
 .slots-header button:hover {
-    background-color: var(--gemini-msg-bg);
+    background-color: var(--secondary-bg);
     color: var(--text-color);
 }
 
@@ -192,22 +224,19 @@ header p {
     padding: 0.5rem;
     text-align: center;
     color: var(--text-color);
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+    display: grid;
+    grid-template-areas: "date details" "name name" "time time" "equip equip";
+    grid-template-columns: auto 1fr;
+    gap: 0.3rem 0.5rem;
+    transition: all 0.2s ease-in-out;
     cursor: pointer;
-}
-
-.slot.filtered-out {
-    opacity: 0.3;
-    transform: scale(0.95);
-    transition: opacity 0.5s ease, transform 0.5s ease;
+    box-shadow: var(--shadow);
 }
 
 .slot:hover {
     transform: translateY(-2px);
-    border-color: var(--user-msg-bg);
+    border-color: var(--accent-color);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
 .slot-date {
@@ -215,14 +244,16 @@ header p {
     font-weight: 700;
     color: var(--user-msg-bg);
     background-color: var(--gemini-msg-bg);
-    padding: 0.1rem 0.4rem;
+    padding: 0.1rem 0.5rem;
     border-radius: 10px;
     align-self: flex-start;
+    grid-area: date;
 }
 
 .slot-details {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
+    gap: 0.5rem;
     width: 100%;
     font-size: 0.8rem;
     color: var(--text-muted-color);
@@ -235,11 +266,14 @@ header p {
 
 .slot-tariff {
     font-weight: 700;
-    color: var(--user-msg-bg);
+    color: var(--accent-color);
 }
 
 .slot-name {
+    grid-area: name;
+    text-align: left;
     font-weight: 500;
+    font-size: 1rem;
     font-size: 0.9rem;
 }
 
@@ -251,6 +285,8 @@ header p {
 
 .slot-equip {
     font-size: 0.8rem;
+    text-align: left;
+    grid-area: equip;
     color: var(--text-muted-color);
     transition: color 0.3s ease;
 }
@@ -278,7 +314,7 @@ header p {
 }
 
 .back-button:hover {
-    color: var(--user-msg-bg);
+    color: var(--accent-color);
 }
 
 .room-detail-view h2 {
@@ -289,14 +325,6 @@ header p {
 .room-detail-view .equip {
     font-size: 1rem;
     margin-bottom: 1rem;
-}
-
-.room-detail-view .description {
-    background-color: var(--container-bg);
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
-    line-height: 1.5;
 }
 
 .schedule-container h4 {
@@ -321,21 +349,22 @@ header p {
 }
 
 .time-block.booked {
-    background-color: #fee2e2; /* Rouge léger */
-    color: #991b1b; /* Texte rouge foncé */
-    border-color: #fecaca;
+    background-color: var(--secondary-bg);
+    color: var(--text-muted-color);
+    border-color: var(--border-color);
     font-weight: 700;
+    text-decoration: line-through;
 }
 
 .time-block.available {
-    background-color: #dcfce7; /* Vert léger */
-    color: #166534; /* Texte vert foncé */
-    border-color: #bbf7d0;
+    background-color: var(--accent-color-light);
+    color: var(--accent-color);
+    border-color: var(--accent-color);
     cursor: pointer;
 }
 
 .time-block.selected {
-    background-color: var(--user-msg-bg);
+    background-color: var(--accent-color);
     color: var(--user-text-color);
     border-color: var(--user-msg-bg);
     font-weight: 700;
@@ -382,15 +411,14 @@ header p {
     width: 100%;
     margin-top: 1rem;
     border: none;
-    cursor: pointer;
-    background: linear-gradient(45deg, #3b82f6, #0084ff);
+    background-color: var(--accent-color);
     color: white;
     padding: 0.8rem 1rem;
     font-size: 1rem;
     font-weight: 700;
     border-radius: 8px;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 15px rgba(0, 132, 255, 0.2);
+    cursor: pointer;
+    transition: opacity 0.2s ease;
 }
 
 footer {
@@ -418,7 +446,7 @@ footer {
 
 #prompt-input:focus {
     outline: none;
-    border-color: var(--user-msg-bg);
+    border-color: var(--accent-color);
 }
 
 #send-button {
@@ -434,7 +462,7 @@ footer {
 
 #send-button:hover {
     opacity: 0.8;
-    color: var(--user-msg-bg);
+    color: var(--accent-color);
 }
 
 /* Indicateur de chargement */
@@ -453,7 +481,7 @@ footer {
 .dot {
     width: 8px;
     height: 8px;
-    background-color: #8e8e8e;
+    background-color: var(--text-muted-color);
     border-radius: 50%;
     animation: bounce 1.4s infinite ease-in-out both;
 }
@@ -464,4 +492,37 @@ footer {
 @keyframes bounce {
     0%, 80%, 100% { transform: scale(0); }
     40% { transform: scale(1.0); }
+}
+
+/* Style pour le titre des salles */
+.slots-title {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: var(--text-muted-color);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Conteneur pour la description détaillée */
+.description-container {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: var(--container-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.description-container h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1em;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.room-detail-view .description {
+    font-size: 0.9em;
+    line-height: 1.6;
+    color: var(--text-muted-color);
 }

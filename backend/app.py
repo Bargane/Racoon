@@ -1,6 +1,6 @@
 import os
 import google.generativeai as genai
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from dotenv import load_dotenv
 import json
@@ -10,16 +10,22 @@ from datetime import datetime
 # Charger les variables d'environnement du fichier .env
 load_dotenv()
 
-app = Flask(__name__)
+# Configure Flask pour qu'il trouve les fichiers du frontend.
+# - 'template_folder' pointe vers le dossier contenant index.html.
+# - 'static_folder' pointe vers le dossier contenant css/ et js/.
+# - 'static_url_path' est défini à '' pour que les fichiers (css, js) soient servis depuis la racine (ex: /css/style.css).
+app = Flask(__name__, template_folder='../frontend', static_folder='../frontend', static_url_path='')
+
 # Activer CORS pour autoriser les requêtes depuis votre front-end
 CORS(app)
 
-# Configurez votre clé API à partir des variables d'environnement
 try:
+    # On configure l'API avec la clé depuis les variables d'environnement
     genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 except KeyError:
     print("Erreur : La clé API Gemini n'a pas été trouvée. Assurez-vous de l'avoir définie dans le fichier .env")
     exit()
+
 
 # Configuration pour la génération de contenu
 generation_config = {
@@ -47,6 +53,11 @@ def get_rooms_as_text():
     """Convertit la liste des salles en une chaîne de caractères pour l'IA."""
     return json.dumps(ROOMS_DB)
 
+@app.route('/', methods=['GET'])
+def index():
+    """Sert la page HTML principale de l'application."""
+    return render_template('index.html')
+
 
 @app.route('/generate', methods=['POST'])
 def generate():
@@ -58,12 +69,6 @@ def generate():
         return jsonify({"error": "Requête invalide. 'prompt' est manquant."}), 400
 
     user_prompt = request.json['prompt']
-
-    # Initialisation du modèle Gemini
-    model = genai.GenerativeModel(
-        model_name="gemini-2.5-flash-lite", # Utilisation d'un nom de modèle stable
-        generation_config=generation_config,
-    )
 
     # Instruction système pour donner un contexte à l'IA
     system_instruction = (
@@ -80,9 +85,14 @@ def generate():
     full_prompt = f"Date actuelle: {current_date}\n\n{system_instruction}\n\nLISTE DES SALLES:\n{get_rooms_as_text()}\n\nDEMANDE UTILISATEUR:\n{user_prompt}"
 
     try:
-        # Pour une requête unique, generate_content est plus simple et direct.
+        # On instancie le modèle à chaque requête, comme recommandé
+        model = genai.GenerativeModel(
+            model_name="gemini-2.5-flash", # Utilisation du nom de modèle stable demandé
+            generation_config=generation_config
+        )
         response = model.generate_content(full_prompt)
-        response_text = response.text if response.parts else ""
+
+        response_text = response.text
 
         # Extraire le JSON d'un bloc de code markdown, c'est plus robuste
         json_match = re.search(r"```json\n(.*?)\n```", response_text, re.DOTALL)
@@ -119,11 +129,6 @@ def generate_description():
 
     room = request.json['room']
     
-    # Initialisation du modèle Gemini
-    model = genai.GenerativeModel(
-        model_name="gemini-2.5-flash-lite",
-    )
-
     system_instruction = (
         "Tu es un assistant technique qui liste l'équipement d'un studio. Pour le studio suivant, fournis une liste sobre et détaillée de l'équipement disponible. "
         "Invente des marques et modèles réalistes et spécifiques pour chaque élément. "
@@ -134,6 +139,9 @@ def generate_description():
     full_prompt = f"Studio: {room['name']}\nÉquipement: {room['equip']}"
 
     try:
+        model = genai.GenerativeModel(
+            model_name="gemini-2.5-flash", # Utilisation du nom de modèle stable demandé
+        )
         response = model.generate_content([system_instruction, full_prompt])
         return jsonify({"description": response.text})
     except Exception as e:

@@ -22,16 +22,16 @@ except Exception as e:
 
 # 2. Initialiser le modèle
 try:
-    model = genai.GenerativeModel('gemini-2.5-flash-lite')
-    print("Modèle 'gemini-2.5-flash-lite' initialisé.")
+    model = genai.GenerativeModel('gemini-2.5-flash')
+    print("Modèle 'gemini-2.5-flash' initialisé.")
 except Exception as e:
     print(f"\nERREUR lors de l'initialisation du modèle: {e}")
     exit()
 
 # 3. Envoyer un prompt simple
 try:
-    print("\nEnvoi d'un prompt simple ('Quelle est la capitale de la France ?')...")
-    response = model.generate_content("Quelle est la capitale de la France ?")
+    print("\nEnvoi d'un prompt simple ('Bonjour, qui es-tu ?')...")
+    response = model.generate_content("Bonjour, qui es-tu ?")
     
     print("\n--- RÉPONSE DE L'API ---")
     print(response.text)

@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Réinitialiser le panneau de droite à la liste initiale des salles
         rightPanel.innerHTML = `
             <div class="slots-container">
-                <h3>Salles disponibles à Paris</h3>
+                <h3 class="slots-title">Salles disponibles à Paris</h3>
                 <div class="slots-grid"></div>
             </div>
         `;
@@ -126,8 +126,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 </button>
                 <h2>${room.name}</h2>
                 <div class="equip">${room.equip}</div>
-                <div class="description">${room.description || "Aucune description disponible."}</div>
                 <div class="schedule-container">
+                    <div class="description-container">
+                        <h4>Équipement détaillé</h4>
+                        <div class="description">${room.description ? room.description.replace(/\n/g, '<br>') : "Aucune description disponible."}</div>
+                    </div>
+
                     <h4>Disponibilités de la journée</h4>
                     <div class="schedule">
                         ${generateScheduleHTML(room.time)}
@@ -173,10 +177,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         return hours.map(hour => {
-            // Inversion de la logique : un créneau est disponible s'il est DANS la plage horaire, et réservé sinon.
-            const isAvailableSlot = hour >= bookedStart && hour < bookedEnd;
-            let timeBlockHTML = `<div class="time-block ${isAvailableSlot ? 'available' : 'booked'}"`;
-            if (isAvailableSlot) {
+            // Logique corrigée : un créneau est "réservé" (booked) s'il est dans la plage horaire.
+            const isBookedSlot = hour >= bookedStart && hour < bookedEnd;
+            let timeBlockHTML = `<div class="time-block ${isBookedSlot ? 'booked' : 'available'}"`;
+            if (!isBookedSlot) { // Le créneau est donc disponible
                 // On ajoute un attribut pour attacher l'événement plus tard
                 timeBlockHTML += ` data-time="${hour}:00"`;
             }
@@ -243,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (backButton) {
             rightPanel.innerHTML = `
                 <div class="slots-container">
-                    <h3>Salles disponibles à Paris</h3>
+                    <h3 class="slots-title">Salles disponibles à Paris</h3>
                     <div class="slots-grid"></div>
                 </div>
             `;
