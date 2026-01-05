@@ -6,15 +6,26 @@ from dotenv import load_dotenv
 import json
 import re
 from datetime import datetime
+import smtplib
+import ssl
+from email.message import EmailMessage
 
 # Charger les variables d'environnement du fichier .env
 load_dotenv()
 
+# Définir les chemins de manière robuste
+# Chemin absolu du dossier où se trouve app.py (le dossier backend)
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+# Chemin du dossier parent (la racine du projet, RentOmatic)
+project_root = os.path.dirname(backend_dir)
+# Chemin du dossier frontend
+frontend_dir = os.path.join(project_root, 'frontend')
+
 # Configure Flask pour qu'il trouve les fichiers du frontend.
-# - 'template_folder' pointe vers le dossier contenant index.html.
-# - 'static_folder' pointe vers le dossier contenant css/ et js/.
-# - 'static_url_path' est défini à '' pour que les fichiers (css, js) soient servis depuis la racine (ex: /css/style.css).
-app = Flask(__name__, template_folder='../frontend', static_folder='../frontend', static_url_path='')
+app = Flask(__name__,
+            template_folder=frontend_dir,
+            static_folder=frontend_dir,
+            static_url_path='')
 
 # Activer CORS pour autoriser les requêtes depuis votre front-end
 CORS(app)
@@ -41,7 +52,7 @@ configure_api()
 generation_config = {
     "temperature": 0.9,
     "top_p": 1,
-    "top_k": 1,
+    "top_k": 40,
     "max_output_tokens": 2048,
 }
 
@@ -51,40 +62,51 @@ model = genai.GenerativeModel(
     generation_config=generation_config
 )
 
-# Base de données fictive des salles
-ROOMS_DB = [
-    { "id": "studio-a", "name": "Studio de la Cité (Danse)", "date": "Aujourd'hui", "time": "10:00 - 12:00", "equip": "💃 Miroirs, 🔊 Son", "surface": "60m²", "tariff": "40€/h", "tags": ["danse", "miroirs", "son", "aujourd'hui"] },
-    { "id": "salle-b", "name": "Le Local Répétition (Musique)", "date": "Aujourd'hui", "time": "14:00 - 16:00", "equip": "🎸 Amplis, 🥁 Batterie", "surface": "30m²", "tariff": "35€/h", "tags": ["musique", "amplis", "batterie", "aujourd'hui"] },
-    { "id": "plateau-c", "name": "Théâtre de l'Atelier (Scène)", "date": "Demain", "time": "15:00 - 18:00", "equip": "💡 Lumières, 🎭 Scène", "surface": "100m²", "tariff": "60€/h", "tags": ["théâtre", "lumières", "scène", "dix personnes", "demain"] },
-    { "id": "studio-d", "name": "Le Bœuf sur le Toit (Musique)", "date": "Demain", "time": "19:00 - 21:00", "equip": "🎹 Piano, 🎤 Micros", "surface": "25m²", "tariff": "30€/h", "tags": ["musique", "piano", "micros", "demain"] },
-    { "id": "studio-e", "name": "L'Espace Sonore (Enregistrement)", "date": "Aujourd'hui", "time": "18:00 - 20:00", "equip": "🎤 Micros, 🎧 Casques", "surface": "20m²", "tariff": "45€/h", "tags": ["musique", "micros", "casques", "enregistrement", "aujourd'hui"] },
-    { "id": "studio-f", "name": "La Scène Ouverte (Théâtre)", "date": "Ce soir", "time": "20:00 - 23:00", "equip": "🎭 Scène, 🪑 Chaises", "surface": "70m²", "tariff": "50€/h", "tags": ["théâtre", "scène", "ce soir"] },
-    { "id": "studio-g", "name": "Le Parquet Flottant (Danse)", "date": "Demain", "time": "09:00 - 11:00", "equip": "💃 Miroirs, 🩰 Barre", "surface": "50m²", "tariff": "35€/h", "tags": ["danse", "miroirs", "barre", "demain"] },
-    { "id": "studio-h", "name": "Le Studio Luna-Rossa (Musique)", "date": "Demain", "time": "11:00 - 13:00", "equip": "🎸 Amplis, 🎹 Piano", "surface": "35m²", "tariff": "40€/h", "tags": ["musique", "amplis", "piano", "demain"] },
-    { "id": "studio-i", "name": "Le Loft Créatif (Mixte)", "date": "Après-demain", "time": "10:00 - 14:00", "equip": "📽️ Projecteur, 🎨 Espace vide", "surface": "80m²", "tariff": "55€/h", "tags": ["mixte", "projecteur", "créatif", "après-demain"] },
-    { "id": "studio-j", "name": "La Cave à Jazz (Musique)", "date": "Après-demain", "time": "21:00 - 00:00", "equip": "🎷 Saxophone, 🎹 Piano, 🥁 Batterie", "surface": "40m²", "tariff": "40€/h", "tags": ["musique", "jazz", "piano", "batterie", "après-demain"] }
-]
-
-def get_rooms_as_text():
-    """Convertit la liste des salles en une chaîne de caractères pour l'IA."""
-    return json.dumps(ROOMS_DB)
-
 def build_search_prompt(user_prompt):
-    """Construit le prompt complet pour la recherche de salles."""
+    """Construit le prompt pour trouver des studios de répétition réels à Paris."""
     system_instruction = (
-        "Tu es un assistant de réservation intelligent pour des salles de répétition à Paris. Ton rôle est d'aider l'utilisateur. "
-        "Analyse la demande de l'utilisateur. Tu as deux modes de réponse possibles :\n"
-        "1. MODE RECHERCHE : Si la demande est une recherche claire de salle (ex: 'salle de danse', 'studio avec batterie'), retourne un objet JSON avec `\"type\": \"search_results\"` et une clé `\"data\"` contenant les résultats. Si tu ne trouves aucune salle existante, génères-en 2 nouvelles.\n"
-        "2. MODE CONVERSATION : Si la demande est une salutation, une question générale ou une demande qui n'est pas une recherche (ex: 'bonjour', 'qui es-tu ?'), retourne un objet JSON avec `\"type\": \"clarification\"` et une clé `\"message\"` contenant ta réponse conversationnelle. Les salles générées doivent inclure les champs 'surface' et 'tariff'.\n"
-        "Exemple MODE RECHERCHE: ```json\n{\"type\": \"search_results\", \"data\": {\"matched_ids\": [\"salle-b\"], \"generated_rooms\": []}}\n```\n"
-        "Exemple MODE CONVERSATION: ```json\n{\"type\": \"clarification\", \"message\": \"Bonjour ! Je suis un assistant virtuel. Comment puis-je vous aider à trouver une salle ?\"}\n```\n"
+        "Tu es un assistant expert qui aide des artistes (musiciens, danseurs, acteurs) à trouver des studios de répétition à Paris.\n"
+        "Ton rôle est d'analyser la demande de l'utilisateur, même si elle est complexe, et de générer une liste de studios plausibles qui y répondent au mieux.\n\n"
+        "1. MODE RECHERCHE : Si la demande est une recherche de studio, décompose la demande en critères clés (type d'activité, équipement, lieu, date, heure).\n"
+        "   - Priorise la recherche sur le **type d'activité** et l'**équipement** demandé.\n"
+        "   - Pour chaque studio trouvé, fournis les informations suivantes. Si une information n'est pas disponible, tu peux omettre le champ.\n"
+        "     - name: Le nom du studio.\n"
+        "     - address: L'adresse (au moins l'arrondissement).\n"
+        "     - email: L'email de contact. Si non trouvé, utilise 'raccon.contact@gmail.com'.\n"
+        "     - phone: Le numéro de téléphone.\n"
+        "     - price_range: Une fourchette de prix.\n"
+        "     - equip: L'équipement pertinent, en confirmant la présence de l'équipement demandé.\n"
+        "     - relevance_reason: Une phrase expliquant pourquoi ce studio est un bon choix, en mentionnant comment il répond aux critères de la demande. Si la disponibilité exacte est difficile à vérifier, mentionne-le (ex: 'Idéal pour le rock, possède une batterie. Il faudra les contacter pour vérifier les créneaux en soirée en février.').\n\n"
+        "2. MODE CONVERSATION : Si la demande est une salutation ou une question générale, réponds de manière conversationnelle.\n\n"
+        "Le format de ta réponse DOIT être un objet JSON dans un bloc de code.\n\n"
+        "Exemple RECHERCHE:\n"
+        "```json\n"
+        "{\n"
+        "  \"type\": \"search_results\",\n"
+        "  \"data\": [\n"
+        "    {\n"
+        "      \"name\": \"Studio Luna Rossa\",\n"
+        "      \"address\": \"Paris 11ème\",\n"
+        "      \"price_range\": \"25-40€/h\",\n"
+        "      \"equip\": \"Studio tout équipé pour groupe (batterie, amplis).\",\n"
+        "      \"relevance_reason\": \"Idéal pour les groupes de rock et ouvert en soirée.\"\n"
+        "    }\n"
+        "  ]\n"
+        "}\n"
+        "```\n\n"
+        "Exemple CONVERSATION:\n"
+        "```json\n"
+        "{\n"
+        "  \"type\": \"clarification\",\n"
+        "  \"message\": \"Bonjour ! Que cherchez-vous comme studio aujourd'hui ?\"\n"
+        "}\n"
+        "```"
     )
     current_date = datetime.now().strftime("%Y-%m-%d")
     return (
         f"Date actuelle: {current_date}\n\n"
         f"{system_instruction}\n\n"
-        f"LISTE DES SALLES:\n{get_rooms_as_text()}\n\n"
-        f"DEMANDE UTILISATEUR:\n{user_prompt}"
+        f"DEMANDE UTILISATEUR (Artiste):\n{user_prompt}"
     )
 
 
@@ -122,11 +144,8 @@ def generate():
             response_data = json.loads(json_str)
             
             if response_data.get("type") == "search_results":
-                search_data = response_data.get("data", {})
-                matched_ids = search_data.get("matched_ids", [])
-                matched_rooms = [room for room in ROOMS_DB if room["id"] in matched_ids]
-                all_results = matched_rooms + search_data.get("generated_rooms", [])
-                return jsonify({"type": "search_results", "message": "Voici les créneaux qui correspondent à votre recherche.", "results": all_results})
+                results = response_data.get("data", [])
+                return jsonify({"type": "search_results", "message": "Voici les studios qui correspondent à votre recherche.", "results": results})
             
             # Si c'est une clarification ou un autre type, on le retourne directement
             return jsonify(response_data)
@@ -139,27 +158,88 @@ def generate():
         # Gérer les erreurs potentielles de l'API
         return jsonify({"error": str(e)}), 500
 
+@app.route('/send-email', methods=['POST'])
+def send_email():
+    """
+    Envoie un email de contact aux studios sélectionnés.
+    """
+    if not request.json or 'recipients' not in request.json or 'body' not in request.json:
+        return jsonify({"error": "Requête invalide. 'recipients' et 'body' sont manquants."}), 400
+
+    recipients = request.json['recipients']
+    body = request.json['body']
+    
+    gmail_user = os.environ.get("GMAIL_USER")
+    gmail_password = os.environ.get("GMAIL_APP_PASSWORD")
+
+    if not gmail_user or not gmail_password:
+        return jsonify({"error": "Configuration du serveur mail manquante. GMAIL_USER et GMAIL_APP_PASSWORD doivent être définis dans le fichier .env."}), 500
+
+    subject = "Demande de renseignement pour location de studio de répétition"
+
+    try:
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+            server.login(gmail_user, gmail_password)
+            for recipient in recipients:
+                msg = EmailMessage()
+                msg.set_content(body)
+                msg['Subject'] = subject
+                msg['From'] = gmail_user
+                msg['To'] = recipient
+                server.send_message(msg)
+        return jsonify({"message": "Email envoyé avec succès."})
+    except Exception as e:
+        print(f"Erreur lors de l'envoi de l'email : {e}")
+        return jsonify({"error": f"Erreur lors de l'envoi de l'email : {str(e)}"}), 500
+
+@app.route('/generate-contact-message', methods=['POST'])
+def generate_contact_message():
+    """
+    Génère un message de contact personnalisé basé sur le prompt de l'utilisateur.
+    """
+    if not request.json or 'user_prompt' not in request.json:
+        return jsonify({"error": "Requête invalide. 'user_prompt' est manquant."}), 400
+
+    user_prompt = request.json['user_prompt']
+
+    system_instruction = (
+        "Tu es un assistant de rédaction pour artistes. Ton but est de rédiger un email de contact professionnel, amical et concis.\n"
+        "En te basant sur la demande initiale de l'artiste, rédige un message à envoyer à des studios de répétition.\n"
+        "Le message doit :\n"
+        "1. Résumer clairement le besoin de l'artiste (type d'activité, équipement recherché, période souhaitée, etc.).\n"
+        "2. Se terminer par une question ouverte sur leurs disponibilités et tarifs.\n"
+        "3. Être prêt à être copié-collé dans un email.\n\n"
+        "Ne commence PAS par 'Bonjour,'. Commence directement par le corps du message. Ne signe PAS le message. Ne termine PAS par 'Cordialement,' ou un nom."
+    )
+
+    full_prompt = f"Demande initiale de l'artiste: \"{user_prompt}\"\n\nRédige le message de contact."
+
+    try:
+        response = model.generate_content([system_instruction, full_prompt])
+        return jsonify({"message": response.text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/generate-description', methods=['POST'])
 def generate_description():
     """
-    Génère une description détaillée pour une salle spécifique.
+    Génère une description détaillée pour un loueur (lieu).
     """
-    if not request.json or 'room' not in request.json:
-        return jsonify({"error": "Requête invalide. 'room' est manquant."}), 400
+    if not request.json or 'item' not in request.json:
+        return jsonify({"error": "Requête invalide. 'item' est manquant."}), 400
 
-    room = request.json['room']
+    item = request.json['item']
     
-    system_instruction = (
-        "Tu es un assistant technique qui liste l'équipement d'un studio. Pour le studio suivant, fournis une liste sobre et détaillée de l'équipement disponible. "
-        "Invente des marques et modèles réalistes et spécifiques pour chaque élément. "
-        "Exemple pour 'Ampli': 'Ampli Guitare: Marshall JCM800, Fender Twin Reverb'. Pour 'Batterie': 'Batterie: Tama Starclassic Maple (22\", 10\", 12\", 16\")'. "
-        "Ne rédige pas de phrases marketing, contente-toi de lister l'équipement."
-    )
+    system_instruction = ("Tu es le gérant d'un lieu de répétition parisien. Le lieu que tu gères possède plusieurs studios.\n"
+                          "Décris ton établissement de manière engageante pour un artiste. Commence par inventer un nombre de studios que tu possèdes (ex: 'Notre centre dispose de 8 studios...').\n"
+                          "Ensuite, pour l'équipement spécifique mentionné, donne des détails techniques réalistes (marques, modèles) pour le rendre attractif.\n"
+                          "Exemple pour 'Ampli, Batterie': '...l'un de nos studios est équipé d'amplis Marshall JCM800 et Fender Twin Reverb, ainsi que d'une batterie Tama Starclassic.'\n"
+                          "Rédige une description de 3-4 phrases.")
     
-    full_prompt = f"Studio: {room['name']}\nÉquipement: {room['equip']}"
+    full_prompt = f"Nom du lieu: {item.get('name')}\nÉquipement principal à détailler: {item.get('equip')}"
 
     try:
-        # Utilise le même modèle global, mais sans la config de génération spécifique si non nécessaire
         response = model.generate_content([system_instruction, full_prompt])
         return jsonify({"description": response.text})
     except Exception as e:

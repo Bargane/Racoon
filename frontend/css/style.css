@@ -223,11 +223,9 @@ header p {
     border-radius: 8px;
     padding: 0.5rem;
     text-align: center;
-    color: var(--text-color);
-    display: grid;
-    grid-template-areas: "date details" "name name" "time time" "equip equip";
-    grid-template-columns: auto 1fr;
-    gap: 0.3rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
     transition: all 0.2s ease-in-out;
     cursor: pointer;
     box-shadow: var(--shadow);
@@ -239,54 +237,52 @@ header p {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
-.slot-date {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--user-msg-bg);
-    background-color: var(--gemini-msg-bg);
-    padding: 0.1rem 0.5rem;
-    border-radius: 10px;
-    align-self: flex-start;
-    grid-area: date;
+.slot.selected {
+    border-color: var(--accent-color);
+    background-color: var(--accent-color-light);
 }
 
 .slot-details {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: 0.5rem;
     width: 100%;
     font-size: 0.8rem;
     color: var(--text-muted-color);
-    margin-bottom: 0.25rem;
 }
 
-.slot-surface {
+.studio-info {
+    font-size: 0.85rem;
+    color: var(--text-muted-color);
+    text-align: left;
+    margin-top: 4px;
+}
+
+.studio-info strong {
+    color: var(--text-color);
     font-weight: 500;
 }
 
-.slot-tariff {
-    font-weight: 700;
+.studio-relevance {
+    font-size: 0.8rem;
+    font-style: italic;
     color: var(--accent-color);
+    text-align: left;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border-color);
 }
 
 .slot-name {
-    grid-area: name;
     text-align: left;
-    font-weight: 500;
+    font-weight: 700;
     font-size: 1rem;
-    font-size: 0.9rem;
-}
-
-.slot-time {
-    font-size: 0.85rem;
-    color: var(--text-muted-color);
-    transition: color 0.3s ease;
+    color: var(--text-color);
 }
 
 .slot-equip {
     font-size: 0.8rem;
     text-align: left;
-    grid-area: equip;
     color: var(--text-muted-color);
     transition: color 0.3s ease;
 }
@@ -322,57 +318,18 @@ header p {
     margin-bottom: 0.5rem;
 }
 
-.room-detail-view .equip {
+.room-detail-view .equip, .room-detail-view .description {
     font-size: 1rem;
     margin-bottom: 1rem;
-}
-
-.schedule-container h4 {
-    margin-bottom: 0.75rem;
-    font-weight: 500;
-}
-
-.schedule {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: 0.5rem;
-}
-
-.time-block {
-    background-color: var(--container-bg);
-    padding: 0.5rem;
-    border-radius: 4px;
-    text-align: center;
-    font-size: 0.8rem;
-    border: 1px solid var(--border-color);
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.time-block.booked {
-    background-color: var(--secondary-bg);
+    line-height: 1.6;
     color: var(--text-muted-color);
-    border-color: var(--border-color);
-    font-weight: 700;
-    text-decoration: line-through;
+}
+.room-detail-view .equip div {
+    margin-bottom: 0.25rem;
 }
 
-.time-block.available {
-    background-color: var(--accent-color-light);
-    color: var(--accent-color);
-    border-color: var(--accent-color);
-    cursor: pointer;
-}
-
-.time-block.selected {
-    background-color: var(--accent-color);
-    color: var(--user-text-color);
-    border-color: var(--user-msg-bg);
-    font-weight: 700;
-    transform: scale(1.05);
-}
-
-/* Styles pour la vue de réservation */
-.booking-view {
+/* Styles pour la vue de contact */
+.contact-view {
     padding: 1.5rem;
     height: 100%;
     box-sizing: border-box;
@@ -380,45 +337,57 @@ header p {
     color: var(--text-color);
 }
 
-.booking-view h2 {
+.contact-view h2 {
     margin-top: 0;
 }
 
-.booking-info {
+.contact-info {
     background-color: var(--container-bg);
     padding: 1rem;
     border-radius: 8px;
     margin-bottom: 1.5rem;
 }
 
-.booking-info p {
+.contact-info p {
     margin: 0 0 0.5rem 0;
 }
 
-.booking-textarea {
+.contact-textarea {
     width: 100%;
-    min-height: 100px;
+    box-sizing: border-box;
     border-radius: 8px;
     border: 1px solid var(--border-color);
     padding: 0.75rem;
     font-family: 'Inter', sans-serif;
-    font-size: 1rem;
-    background-color: var(--secondary-bg);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    background-color: var(--container-bg);
     color: var(--text-color);
+    resize: vertical;
 }
 
-.booking-button {
+.details-button, .contact-button {
     width: 100%;
     margin-top: 1rem;
     border: none;
     background-color: var(--accent-color);
     color: white;
-    padding: 0.8rem 1rem;
-    font-size: 1rem;
-    font-weight: 700;
+    padding: 0.7rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
     border-radius: 8px;
     cursor: pointer;
     transition: opacity 0.2s ease;
+}
+
+.details-button:hover, .contact-button:hover {
+    opacity: 0.85;
+}
+
+.details-button {
+    background-color: var(--secondary-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
 }
 
 footer {
@@ -492,6 +461,12 @@ footer {
 @keyframes bounce {
     0%, 80%, 100% { transform: scale(0); }
     40% { transform: scale(1.0); }
+}
+
+#contact-button-container {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+    background-color: var(--secondary-bg);
+    transition: background-color 0.3s ease;
 }
 
 /* Style pour le titre des salles */
