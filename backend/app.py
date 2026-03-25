@@ -64,15 +64,27 @@ def build_search_prompt(user_prompt):
     system_instruction = (
         "Tu es un assistant expert qui aide des artistes (musiciens, danseurs) à trouver des studios de répétition à Paris.\n"
         "Tu disposes d'une base de données de studios RÉELS. Tu dois UNIQUEMENT utiliser ces studios — n'en invente aucun.\n\n"
-        "1. MODE RECHERCHE : Analyse la demande et retourne les studios de la liste qui correspondent le mieux.\n"
-        "   - Filtre selon le type (musique/danse), l'équipement, la localisation, le prix.\n"
-        "   - Pour chaque studio retourné, inclus tous les champs disponibles de la base + un champ 'relevance_reason'.\n"
-        "   - Si aucun studio ne correspond parfaitement, retourne les plus proches en l'expliquant.\n\n"
+        "1. MODE RECHERCHE : Décompose la demande en critères et filtre les studios correspondants.\n\n"
+        "   CRITÈRES À EXTRAIRE ET RESPECTER :\n"
+        "   - Équipement : vérifie que le champ 'equip' du studio contient bien ce qui est demandé.\n"
+        "   - Nombre de personnes : compare avec 'capacity_max_persons'. Exclus les studios trop petits.\n"
+        "   - Horaires : vérifie que le studio est ouvert aux jours et heures demandés (champ 'hours').\n"
+        "     Si la demande précise un jour (ex: mercredi, vendredi) ou une heure (ex: 19h), ne retourne que les studios ouverts à ce moment.\n"
+        "   - Type d'activité : musique ou danse.\n"
+        "   - Localisation / arrondissement si mentionné.\n"
+        "   - Budget si mentionné.\n\n"
+        "   DISPONIBILITÉ :\n"
+        "   Les créneaux exacts ne peuvent pas être vérifiés en temps réel. Dans 'relevance_reason', indique toujours :\n"
+        "   - Pourquoi ce studio correspond aux critères.\n"
+        "   - Un rappel de contacter le studio ou d'utiliser son lien de réservation pour confirmer la dispo.\n\n"
+        "   RÉSULTAT :\n"
+        "   - Inclus tous les champs disponibles de la base pour chaque studio retourné.\n"
+        "   - Si aucun studio ne correspond parfaitement, retourne les plus proches en expliquant les compromis.\n\n"
         "2. MODE CONVERSATION : Si c'est une salutation ou question générale, réponds de manière conversationnelle.\n\n"
         "Le format de ta réponse DOIT être un objet JSON dans un bloc de code.\n\n"
         "Exemple RECHERCHE:\n"
         "```json\n"
-        "{\"type\": \"search_results\", \"data\": [{\"name\": \"Studio Bleu\", \"address\": \"...\", \"price_range\": \"...\", \"equip\": \"...\", \"relevance_reason\": \"...\"}]}\n"
+        "{\"type\": \"search_results\", \"data\": [{\"name\": \"Studio Bleu\", \"address\": \"...\", \"price_range\": \"...\", \"equip\": \"...\", \"hours\": \"...\", \"booking_url\": \"...\", \"relevance_reason\": \"Correspond aux critères X et Y. Dispo à confirmer via leur site de réservation.\"}]}\n"
         "```\n\n"
         "Exemple CONVERSATION:\n"
         "```json\n"
@@ -112,8 +124,8 @@ def generate():
         response = client.models.generate_content(model=MODEL_NAME, contents=full_prompt, config=generation_config)
         response_text = response.text
 
-        # Extraire le JSON d'un bloc de code markdown, c'est plus robuste
-        json_match = re.search(r"```json\n(.*?)\n```", response_text, re.DOTALL)
+        # Extraire le JSON d'un bloc de code markdown
+        json_match = re.search(r"```json\s*(.*?)\s*```", response_text, re.DOTALL)
         if not json_match:
             # Fallback si l'IA ne retourne pas de JSON formaté
             return jsonify({"type": "clarification", "message": "Je ne suis pas sûr de comprendre. Pouvez-vous reformuler votre recherche ?"})
