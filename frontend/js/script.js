@@ -127,16 +127,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const buildEmailTemplate = (studio, userPrompt) => {
-        const subject = `Demande de renseignement — location de studio de répétition`;
+        const subject = `Demande de réservation — ${studio.name}`;
         const body = `Bonjour,
 
-Je suis à la recherche d'un studio de répétition et votre établissement semble correspondre à mes besoins.
+Je cherche un studio et ${studio.name} correspond bien à ce qu'il me faut.
 
-Ma demande : ${userPrompt}
+Ce que je recherche : ${userPrompt}
 
-Pourriez-vous me confirmer vos disponibilités et tarifs pour cette période ?
+Vous avez de la disponibilité sur ce créneau ? Quels sont vos tarifs ?
 
-Merci d'avance,`;
+Merci !`;
         return { subject, body };
     };
 

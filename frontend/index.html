@@ -10,8 +10,63 @@
     <div class="container">
         <header>
             <div class="logo-container">
-                <img src="img/racoon-logo-transparent-lighttheme.png" alt="Racoon Logo" class="logo-img logo-light-theme">
-                <img src="img/racoon-logo-transparent-darktheme.png" alt="Racoon Logo" class="logo-img logo-dark-theme">
+                <svg id="racoon-logo" xmlns="http://www.w3.org/2000/svg" viewBox="-8 0 136 132" width="72" height="70" aria-label="Racoon logo">
+                  <!-- Corps -->
+                  <ellipse cx="60" cy="98" rx="23" ry="26" fill="#8c9298"/>
+                  <!-- Ventre clair -->
+                  <ellipse cx="60" cy="101" rx="13" ry="18" fill="#c4c9be"/>
+                  <!-- Bras gauche levé -->
+                  <path d="M40 82 Q18 70 6 44 Q12 36 19 41 Q28 64 46 78 Z" fill="#8c9298"/>
+                  <!-- Bras droit levé -->
+                  <path d="M80 82 Q102 70 114 44 Q108 36 101 41 Q92 64 74 78 Z" fill="#8c9298"/>
+                  <!-- Patte gauche — foncée, doigts écartés -->
+                  <ellipse cx="7" cy="36" rx="11" ry="9" fill="#18160c" transform="rotate(-28 7 36)"/>
+                  <line x1="-1" y1="28" x2="-5" y2="20" stroke="#18160c" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="4" y1="25" x2="1" y2="17" stroke="#18160c" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="9" y1="24" x2="8" y2="16" stroke="#18160c" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="14" y1="26" x2="16" y2="18" stroke="#18160c" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="18" y1="31" x2="23" y2="25" stroke="#18160c" stroke-width="2.5" stroke-linecap="round"/>
+                  <!-- Patte droite — foncée, doigts écartés -->
+                  <ellipse cx="113" cy="36" rx="11" ry="9" fill="#18160c" transform="rotate(28 113 36)"/>
+                  <line x1="121" y1="28" x2="125" y2="20" stroke="#18160c" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="116" y1="25" x2="119" y2="17" stroke="#18160c" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="111" y1="24" x2="112" y2="16" stroke="#18160c" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="106" y1="26" x2="104" y2="18" stroke="#18160c" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="102" y1="31" x2="97" y2="25" stroke="#18160c" stroke-width="2.5" stroke-linecap="round"/>
+                  <!-- Tête ronde -->
+                  <circle cx="60" cy="46" r="25" fill="#8c9298"/>
+                  <!-- Oreilles rondes (comme dans la photo, pas pointues) -->
+                  <circle cx="39" cy="26" r="13" fill="#6a7278"/>
+                  <circle cx="81" cy="26" r="13" fill="#6a7278"/>
+                  <circle cx="39" cy="26" r="7" fill="#c2b090"/>
+                  <circle cx="81" cy="26" r="7" fill="#c2b090"/>
+                  <!-- Dessus tête foncé -->
+                  <ellipse cx="60" cy="32" rx="19" ry="13" fill="#6a7278" opacity="0.45"/>
+                  <!-- Patches crème au-dessus des yeux -->
+                  <ellipse cx="46" cy="37" rx="10" ry="7" fill="#dedad0"/>
+                  <ellipse cx="74" cy="37" rx="10" ry="7" fill="#dedad0"/>
+                  <!-- Masque noir -->
+                  <rect x="28" y="40" width="64" height="18" rx="9" fill="#18160c"/>
+                  <!-- Yeux brun foncé -->
+                  <circle cx="44" cy="49" r="8" fill="#2a1e10"/>
+                  <circle cx="76" cy="49" r="8" fill="#2a1e10"/>
+                  <circle cx="44" cy="49" r="5" fill="#3e2c1a"/>
+                  <circle cx="76" cy="49" r="5" fill="#3e2c1a"/>
+                  <circle cx="46" cy="47" r="2.5" fill="white" opacity="0.4"/>
+                  <circle cx="78" cy="47" r="2.5" fill="white" opacity="0.4"/>
+                  <!-- Museau crème -->
+                  <ellipse cx="60" cy="62" rx="15" ry="11" fill="#e4dece"/>
+                  <!-- Nez -->
+                  <path d="M55 57 Q60 52 65 57 Q62 63 58 63 Z" fill="#18160c"/>
+                  <!-- Moustaches -->
+                  <line x1="30" y1="61" x2="49" y2="63" stroke="#9aa0a6" stroke-width="1" opacity="0.6" stroke-linecap="round"/>
+                  <line x1="28" y1="65" x2="49" y2="65" stroke="#9aa0a6" stroke-width="1" opacity="0.6" stroke-linecap="round"/>
+                  <line x1="90" y1="61" x2="71" y2="63" stroke="#9aa0a6" stroke-width="1" opacity="0.6" stroke-linecap="round"/>
+                  <line x1="92" y1="65" x2="71" y2="65" stroke="#9aa0a6" stroke-width="1" opacity="0.6" stroke-linecap="round"/>
+                  <!-- Jambes courtes -->
+                  <ellipse cx="48" cy="121" rx="11" ry="8" fill="#6a7278"/>
+                  <ellipse cx="72" cy="121" rx="11" ry="8" fill="#6a7278"/>
+                </svg>
                 <h1>Racoon</h1>
             </div>
             <p>(réservez votre prochaine salle)</p>
@@ -48,8 +103,54 @@
                 </div>
             </div>
         </div>
+        <!-- Footer -->
+        <footer id="site-footer">
+            <span>© 2026 Racoon</span>
+            <span class="footer-sep">·</span>
+            <span>Données studios non contractuelles</span>
+            <span class="footer-sep">·</span>
+            <a href="mailto:bastien.beffa@gmail.com">Contact</a>
+            <span class="footer-sep">·</span>
+            <button id="open-legal-btn">Mentions légales</button>
+        </footer>
     </div>
+    <!-- Dialog mentions légales -->
+    <dialog id="legal-dialog">
+        <div class="legal-content">
+            <h2>Mentions légales</h2>
+
+            <h3>Éditeur du site</h3>
+            <p>Racoon est un projet personnel édité par Bastien Beffa.<br>
+            Contact : <a href="mailto:bastien.beffa@gmail.com">bastien.beffa@gmail.com</a></p>
+
+            <h3>Hébergement</h3>
+            <p>Ce site est hébergé par Render Services, Inc.<br>
+            525 Brannan Street, Suite 300 — San Francisco, CA 94107, États-Unis.<br>
+            <a href="https://render.com" target="_blank" rel="noopener">render.com</a></p>
+
+            <h3>Propriété intellectuelle</h3>
+            <p>L'ensemble des contenus présents sur ce site (textes, visuels, logo) sont la propriété de Bastien Beffa, sauf mention contraire. Toute reproduction, même partielle, est interdite sans autorisation préalable.</p>
+
+            <h3>Données personnelles</h3>
+            <p>Racoon ne collecte aucune donnée personnelle. Les messages saisis dans le chat sont transmis à l'API Google Gemini pour traitement et ne sont pas conservés par nos soins. Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression. Pour toute demande : <a href="mailto:bastien.beffa@gmail.com">bastien.beffa@gmail.com</a></p>
+
+            <h3>Exactitude des informations</h3>
+            <p>Les informations relatives aux studios (tarifs, horaires, disponibilités, équipements) sont fournies à titre indicatif et peuvent ne pas refléter la réalité au moment de votre consultation. Racoon ne saurait être tenu responsable d'éventuelles inexactitudes. Nous vous invitons à contacter directement les studios pour confirmer toute information avant réservation.</p>
+
+            <h3>Cookies</h3>
+            <p>Ce site utilise uniquement un cookie de préférence de thème (clair/sombre), stocké localement dans votre navigateur. Aucun cookie publicitaire ou de suivi n'est utilisé.</p>
+
+            <button id="close-legal-btn" class="legal-close-btn">Fermer</button>
+        </div>
+    </dialog>
+
     <script src="js/config.js"></script>
     <script src="js/script.js?v=1.1"></script>
+    <script>
+        const legalDialog = document.getElementById('legal-dialog');
+        document.getElementById('open-legal-btn').addEventListener('click', () => legalDialog.showModal());
+        document.getElementById('close-legal-btn').addEventListener('click', () => legalDialog.close());
+        legalDialog.addEventListener('click', (e) => { if (e.target === legalDialog) legalDialog.close(); });
+    </script>
 </body>
 </html>
