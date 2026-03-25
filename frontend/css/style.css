@@ -378,24 +378,48 @@ header p {
     resize: vertical;
 }
 
-.booking-link {
-    display: inline-block;
-    margin-top: 8px;
-    padding: 6px 12px;
-    background-color: #2ecc71;
-    color: white;
-    border-radius: 6px;
-    text-decoration: none;
+.slot-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
     font-size: 0.85rem;
     font-weight: 600;
-    transition: background-color 0.2s;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    transition: opacity 0.2s ease;
+    display: inline-block;
 }
 
-.booking-link:hover {
-    background-color: #27ae60;
+.email-btn {
+    background-color: var(--accent-color);
+    color: white;
 }
 
-.details-button, .contact-button {
+.booking-btn {
+    background-color: #2ecc71;
+    color: white;
+}
+
+.booking-btn.disabled {
+    background-color: var(--border-color);
+    color: var(--text-muted-color);
+    cursor: default;
+    font-size: 0.78rem;
+}
+
+.action-btn:not(.disabled):hover {
+    opacity: 0.85;
+}
+
+.contact-button {
     width: 100%;
     margin-top: 1rem;
     border: none;
@@ -409,14 +433,36 @@ header p {
     transition: opacity 0.2s ease;
 }
 
-.details-button:hover, .contact-button:hover {
+.contact-button:hover {
     opacity: 0.85;
 }
 
-.details-button {
-    background-color: var(--secondary-bg);
-    color: var(--text-color);
+.email-field {
+    margin-bottom: 0.75rem;
+}
+
+.email-field label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted-color);
+    margin-bottom: 0.3rem;
+}
+
+.email-field input, .email-field textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 8px;
     border: 1px solid var(--border-color);
+    padding: 0.6rem 0.75rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    background-color: var(--container-bg);
+    color: var(--text-color);
+}
+
+.email-field input[readonly] {
+    opacity: 0.6;
 }
 
 footer {
