@@ -1,5 +1,6 @@
 import os
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -32,34 +33,25 @@ CORS(app)
 
 # --- Configuration Globale de l'API et du Modèle ---
 
-MODEL_NAME = "gemini-2.5-flash" # Modèle centralisé
+MODEL_NAME = "gemini-2.5-flash"
 
 def configure_api():
     """Charge la clé API et configure le client genai."""
     try:
         api_key = os.environ["GEMINI_API_KEY"]
-        genai.configure(api_key=api_key)
         print(f"API Gemini configurée avec succès pour le modèle : {MODEL_NAME}")
+        return genai.Client(api_key=api_key)
     except KeyError:
         print("ERREUR : Clé API Gemini non trouvée. Assurez-vous de l'avoir définie dans le fichier .env")
         exit()
 
-configure_api()
+client = configure_api()
 
-# Configuration pour la génération de contenu
-# Note: top_k=1 est très restrictif. Considérez d'augmenter cette valeur pour plus de créativité.
-# Configuration pour la génération de contenu
-generation_config = {
-    "temperature": 0.9,
-    "top_p": 1,
-    "top_k": 40,
-    "max_output_tokens": 2048,
-}
-
-# Initialisation du modèle une seule fois au démarrage de l'application
-model = genai.GenerativeModel(
-    model_name=MODEL_NAME,
-    generation_config=generation_config
+generation_config = types.GenerateContentConfig(
+    temperature=0.9,
+    top_p=1,
+    top_k=40,
+    max_output_tokens=2048,
 )
 
 def build_search_prompt(user_prompt):
@@ -130,7 +122,7 @@ def generate():
     full_prompt = build_search_prompt(user_prompt)
 
     try:
-        response = model.generate_content(full_prompt)
+        response = client.models.generate_content(model=MODEL_NAME, contents=full_prompt, config=generation_config)
         response_text = response.text
 
         # Extraire le JSON d'un bloc de code markdown, c'est plus robuste
@@ -216,7 +208,7 @@ def generate_contact_message():
     full_prompt = f"Demande initiale de l'artiste: \"{user_prompt}\"\n\nRédige le message de contact."
 
     try:
-        response = model.generate_content([system_instruction, full_prompt])
+        response = client.models.generate_content(model=MODEL_NAME, contents=[system_instruction, full_prompt], config=generation_config)
         return jsonify({"message": response.text})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -240,7 +232,7 @@ def generate_description():
     full_prompt = f"Nom du lieu: {item.get('name')}\nÉquipement principal à détailler: {item.get('equip')}"
 
     try:
-        response = model.generate_content([system_instruction, full_prompt])
+        response = client.models.generate_content(model=MODEL_NAME, contents=[system_instruction, full_prompt], config=generation_config)
         return jsonify({"description": response.text})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
