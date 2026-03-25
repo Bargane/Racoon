@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) {
                 const errorData = await response.json();
                 if (errorData.type === 'ai_limit') {
-                    addMessage(errorData.message, 'gemini ai-limit');
+                    addMessage(errorData.message, 'gemini', 'ai-limit');
                     rightPanel.querySelector('.slots-title').textContent = 'Assistant indisponible';
                     rightPanel.querySelector('.slots-grid').innerHTML = '';
                     return;
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 lastUserPrompt = prompt;
                 renderStudios(data.results);
             } else if (data.type === 'ai_limit') {
-                addMessage(data.message, 'gemini ai-limit');
+                addMessage(data.message, 'gemini', 'ai-limit');
                 rightPanel.querySelector('.slots-title').textContent = 'Assistant indisponible';
                 rightPanel.querySelector('.slots-grid').innerHTML = '';
             } else if (data.type === 'clarification') {
@@ -80,9 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const addMessage = (text, sender) => {
+    const addMessage = (text, sender, extraClass = '') => {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message', `${sender}-message`);
+        if (extraClass) messageElement.classList.add(extraClass);
         messageElement.textContent = text;
         chatBox.appendChild(messageElement);
         scrollToBottom();
