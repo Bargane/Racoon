@@ -56,7 +56,7 @@ generation_config = types.GenerateContentConfig(
     temperature=0.9,
     top_p=1,
     top_k=40,
-    max_output_tokens=2048,
+    max_output_tokens=8192,
 )
 
 def build_search_prompt(user_prompt):
