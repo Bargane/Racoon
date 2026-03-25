@@ -133,10 +133,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (selectedStudios.length > 0) {
             container.innerHTML = `<button id="main-contact-button" class="contact-button">Contacter les ${selectedStudios.length} studios sélectionnés</button>`;
-            document.getElementById('main-contact-button').addEventListener('click', () => {
-                const studiosToContact = lastResults.filter(studio => selectedStudios.includes(studio.id));
-                showContactView(studiosToContact, lastUserPrompt);
-            });
         } else {
             container.innerHTML = '';
         }
@@ -182,10 +178,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="contact-button">Contacter ce studio</button>
             </div>
         `;
-
-        rightPanel.querySelector('.contact-button').addEventListener('click', () => {
-            showContactView([studio], lastUserPrompt);
-        });
     };
 
     const showContactView = async (studios, prompt) => {
@@ -203,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p><strong>Studios :</strong> ${studioNames}</p>
                 </div>
                 <textarea class="contact-textarea" rows="10" placeholder="Génération du message..."></textarea>
-                <button id="send-contact-message" class="contact-button">Envoyer le message</button>
+                <button id="send-contact-message" class="contact-button" disabled>Envoyer le message</button>
             </div>
         `;
     
@@ -211,45 +203,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const contactTextarea = rightPanel.querySelector('.contact-textarea');
         const sendButton = rightPanel.querySelector('#send-contact-message');
 
-        // On attache immédiatement l'écouteur pour l'envoi du message
-        sendButton.addEventListener('click', async () => {
-            const messageBody = contactTextarea.value;
-            const recipientEmails = studios.map(s => s.email).filter(Boolean);
-
-            if (recipientEmails.length === 0) {
-                addMessage('Aucune adresse e-mail de contact trouvée pour ces studios.', 'gemini');
-                return;
-            }
-
-            sendButton.textContent = 'Envoi en cours...';
-            sendButton.disabled = true;
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/send-email`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ recipients: recipientEmails, body: messageBody })
-                });
-
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.error || 'Erreur inconnue lors de l'envoi.');
-                
-                addMessage(`Message envoyé avec succès à : ${studioNames}.`, 'gemini');
-                
-                if (recipientEmails.some(email => email.includes('raccon.contact'))) {
-                    addMessage(`(Test) Vous devriez recevoir une copie dans votre boîte mail raccon.contact@gmail.com.`, 'gemini');
-                }
-
-            } catch (error) {
-                console.error("Erreur lors de l'envoi de l'email:", error);
-                addMessage(`L'envoi de l'e-mail a échoué. Vérifiez la configuration du serveur et les logs.`, 'gemini');
-            } finally {
-                // Retour à l'accueil après un court délai
-                setTimeout(() => {
-                    rightPanel.innerHTML = `<div class="slots-container"><h3 class="slots-title">Bienvenue !</h3><div class="slots-grid"></div></div>`;
-                }, 2500);
-            }
-        });
+        // On change le texte du bouton pour indiquer le chargement
+        sendButton.textContent = 'Génération du message...';
 
         // Pendant que l'écouteur est prêt, on lance la génération du message
         try {
@@ -263,12 +218,16 @@ document.addEventListener('DOMContentLoaded', () => {
             // On vérifie si la vue de contact est toujours affichée avant de la modifier
             if (rightPanel.contains(contactTextarea)) {
                 contactTextarea.value = `Bonjour,\n\n${data.message}\n\nCordialement,`;
+                sendButton.disabled = false; // On active le bouton
+                sendButton.textContent = 'Envoyer le message';
             }
         } catch (error) {
             console.error("Erreur lors de la génération du message de contact:", error);
             // On vérifie aussi ici si la vue est toujours présente
             if (rightPanel.contains(contactTextarea)) {
                 contactTextarea.value = "La génération du message a échoué. Vous pouvez rédiger votre message manuellement.";
+                sendButton.disabled = false; // On active aussi le bouton en cas d'erreur
+                sendButton.textContent = 'Envoyer le message';
                 contactTextarea.placeholder = "";
             }
         }
