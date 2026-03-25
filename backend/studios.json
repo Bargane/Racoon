@@ -91,17 +91,17 @@
     "hours": "Sur réservation"
   },
   {
-    "id": "hf-music-studio-14",
-    "name": "HF Music Studio",
-    "address": "Paris 14ème",
-    "arrondissement": "14ème",
-    "phone": "",
+    "id": "wacked-live",
+    "name": "Wacked Live",
+    "address": "32 Boulevard de Sébastopol, 75001 Paris",
+    "arrondissement": "1er",
+    "phone": "06 50 59 99 89",
     "email": "",
-    "website": "https://www.quickstudio.com/studios/hf-music-studio-14",
+    "website": "https://wackedlive.fr",
     "price_range": "15-25€/h",
     "type": ["musique"],
-    "equip": "Batterie, amplis, sono, enregistrement",
-    "hours": "Lun-Dim 10h-22h"
+    "equip": "3 studios (20m², 25m², 33m²), traitement acoustique box-in-box, batterie, amplis, sono",
+    "hours": "Lun-Dim 01h-00h"
   },
   {
     "id": "cite-internationale-arts",

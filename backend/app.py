@@ -17,7 +17,7 @@ load_dotenv()
 # Définir les chemins de manière robuste
 # Chemin absolu du dossier où se trouve app.py (le dossier backend)
 backend_dir = os.path.dirname(os.path.abspath(__file__))
-# Chemin du dossier parent (la racine du projet, RentOmatic)
+# Chemin du dossier parent (la racine du projet, Racoon)
 project_root = os.path.dirname(backend_dir)
 # Chemin du dossier frontend
 frontend_dir = os.path.join(project_root, 'frontend')
