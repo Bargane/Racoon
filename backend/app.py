@@ -47,6 +47,11 @@ def configure_api():
 
 client = configure_api()
 
+# Chargement de la base de studios réels au démarrage
+studios_path = os.path.join(backend_dir, 'studios.json')
+with open(studios_path, 'r', encoding='utf-8') as f:
+    STUDIOS_DB = json.load(f)
+
 generation_config = types.GenerateContentConfig(
     temperature=0.9,
     top_p=1,
@@ -55,49 +60,31 @@ generation_config = types.GenerateContentConfig(
 )
 
 def build_search_prompt(user_prompt):
-    """Construit le prompt pour trouver des studios de répétition réels à Paris."""
+    """Construit le prompt pour filtrer les vrais studios depuis la base de données."""
     system_instruction = (
-        "Tu es un assistant expert qui aide des artistes (musiciens, danseurs, acteurs) à trouver des studios de répétition à Paris.\n"
-        "Ton rôle est d'analyser la demande de l'utilisateur, même si elle est complexe, et de générer une liste de studios plausibles qui y répondent au mieux.\n\n"
-        "1. MODE RECHERCHE : Si la demande est une recherche de studio, décompose la demande en critères clés (type d'activité, équipement, lieu, date, heure).\n"
-        "   - Priorise la recherche sur le **type d'activité** et l'**équipement** demandé.\n"
-        "   - Pour chaque studio trouvé, fournis les informations suivantes. Si une information n'est pas disponible, tu peux omettre le champ.\n"
-        "     - name: Le nom du studio.\n"
-        "     - address: L'adresse (au moins l'arrondissement).\n"
-        "     - email: L'email de contact. Si non trouvé, utilise 'raccon.contact@gmail.com'.\n"
-        "     - phone: Le numéro de téléphone.\n"
-        "     - price_range: Une fourchette de prix.\n"
-        "     - equip: L'équipement pertinent, en confirmant la présence de l'équipement demandé.\n"
-        "     - relevance_reason: Une phrase expliquant pourquoi ce studio est un bon choix, en mentionnant comment il répond aux critères de la demande. Si la disponibilité exacte est difficile à vérifier, mentionne-le (ex: 'Idéal pour le rock, possède une batterie. Il faudra les contacter pour vérifier les créneaux en soirée en février.').\n\n"
-        "2. MODE CONVERSATION : Si la demande est une salutation ou une question générale, réponds de manière conversationnelle.\n\n"
+        "Tu es un assistant expert qui aide des artistes (musiciens, danseurs) à trouver des studios de répétition à Paris.\n"
+        "Tu disposes d'une base de données de studios RÉELS. Tu dois UNIQUEMENT utiliser ces studios — n'en invente aucun.\n\n"
+        "1. MODE RECHERCHE : Analyse la demande et retourne les studios de la liste qui correspondent le mieux.\n"
+        "   - Filtre selon le type (musique/danse), l'équipement, la localisation, le prix.\n"
+        "   - Pour chaque studio retourné, inclus tous les champs disponibles de la base + un champ 'relevance_reason'.\n"
+        "   - Si aucun studio ne correspond parfaitement, retourne les plus proches en l'expliquant.\n\n"
+        "2. MODE CONVERSATION : Si c'est une salutation ou question générale, réponds de manière conversationnelle.\n\n"
         "Le format de ta réponse DOIT être un objet JSON dans un bloc de code.\n\n"
         "Exemple RECHERCHE:\n"
         "```json\n"
-        "{\n"
-        "  \"type\": \"search_results\",\n"
-        "  \"data\": [\n"
-        "    {\n"
-        "      \"name\": \"Studio Luna Rossa\",\n"
-        "      \"address\": \"Paris 11ème\",\n"
-        "      \"price_range\": \"25-40€/h\",\n"
-        "      \"equip\": \"Studio tout équipé pour groupe (batterie, amplis).\",\n"
-        "      \"relevance_reason\": \"Idéal pour les groupes de rock et ouvert en soirée.\"\n"
-        "    }\n"
-        "  ]\n"
-        "}\n"
+        "{\"type\": \"search_results\", \"data\": [{\"name\": \"Studio Bleu\", \"address\": \"...\", \"price_range\": \"...\", \"equip\": \"...\", \"relevance_reason\": \"...\"}]}\n"
         "```\n\n"
         "Exemple CONVERSATION:\n"
         "```json\n"
-        "{\n"
-        "  \"type\": \"clarification\",\n"
-        "  \"message\": \"Bonjour ! Que cherchez-vous comme studio aujourd'hui ?\"\n"
-        "}\n"
+        "{\"type\": \"clarification\", \"message\": \"Bonjour ! Que cherchez-vous comme studio aujourd'hui ?\"}\n"
         "```"
     )
     current_date = datetime.now().strftime("%Y-%m-%d")
+    studios_context = json.dumps(STUDIOS_DB, ensure_ascii=False, indent=2)
     return (
         f"Date actuelle: {current_date}\n\n"
         f"{system_instruction}\n\n"
+        f"BASE DE DONNÉES STUDIOS RÉELS:\n{studios_context}\n\n"
         f"DEMANDE UTILISATEUR (Artiste):\n{user_prompt}"
     )
 
