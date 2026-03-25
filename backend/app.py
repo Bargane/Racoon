@@ -7,9 +7,6 @@ from dotenv import load_dotenv
 import json
 import re
 from datetime import datetime
-import smtplib
-import ssl
-from email.message import EmailMessage
 
 # Charger les variables d'environnement du fichier .env
 load_dotenv()
@@ -153,92 +150,6 @@ def generate():
             return jsonify({"type": "ai_limit", "message": "🚦 L'assistant IA est momentanément indisponible (surcharge Google). Réessayez dans quelques instants — le site fonctionne normalement."}), 503
         return jsonify({"error": error_str}), 500
 
-@app.route('/send-email', methods=['POST'])
-def send_email():
-    """
-    Envoie un email de contact aux studios sélectionnés.
-    """
-    if not request.json or 'recipients' not in request.json or 'body' not in request.json:
-        return jsonify({"error": "Requête invalide. 'recipients' et 'body' sont manquants."}), 400
-
-    recipients = request.json['recipients']
-    body = request.json['body']
-    
-    gmail_user = os.environ.get("GMAIL_USER")
-    gmail_password = os.environ.get("GMAIL_APP_PASSWORD")
-
-    if not gmail_user or not gmail_password:
-        return jsonify({"error": "Configuration du serveur mail manquante. GMAIL_USER et GMAIL_APP_PASSWORD doivent être définis dans le fichier .env."}), 500
-
-    subject = "Demande de renseignement pour location de studio de répétition"
-
-    try:
-        context = ssl.create_default_context()
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-            server.login(gmail_user, gmail_password)
-            for recipient in recipients:
-                msg = EmailMessage()
-                msg.set_content(body)
-                msg['Subject'] = subject
-                msg['From'] = gmail_user
-                msg['To'] = recipient
-                server.send_message(msg)
-        return jsonify({"message": "Email envoyé avec succès."})
-    except Exception as e:
-        print(f"Erreur lors de l'envoi de l'email : {e}")
-        return jsonify({"error": f"Erreur lors de l'envoi de l'email : {str(e)}"}), 500
-
-@app.route('/generate-contact-message', methods=['POST'])
-def generate_contact_message():
-    """
-    Génère un message de contact personnalisé basé sur le prompt de l'utilisateur.
-    """
-    if not request.json or 'user_prompt' not in request.json:
-        return jsonify({"error": "Requête invalide. 'user_prompt' est manquant."}), 400
-
-    user_prompt = request.json['user_prompt']
-
-    system_instruction = (
-        "Tu es un assistant de rédaction pour artistes. Ton but est de rédiger un email de contact professionnel, amical et concis.\n"
-        "En te basant sur la demande initiale de l'artiste, rédige un message à envoyer à des studios de répétition.\n"
-        "Le message doit :\n"
-        "1. Résumer clairement le besoin de l'artiste (type d'activité, équipement recherché, période souhaitée, etc.).\n"
-        "2. Se terminer par une question ouverte sur leurs disponibilités et tarifs.\n"
-        "3. Être prêt à être copié-collé dans un email.\n\n"
-        "Ne commence PAS par 'Bonjour,'. Commence directement par le corps du message. Ne signe PAS le message. Ne termine PAS par 'Cordialement,' ou un nom."
-    )
-
-    full_prompt = f"Demande initiale de l'artiste: \"{user_prompt}\"\n\nRédige le message de contact."
-
-    try:
-        response = client.models.generate_content(model=MODEL_NAME, contents=[system_instruction, full_prompt], config=generation_config)
-        return jsonify({"message": response.text})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/generate-description', methods=['POST'])
-def generate_description():
-    """
-    Génère une description détaillée pour un loueur (lieu).
-    """
-    if not request.json or 'item' not in request.json:
-        return jsonify({"error": "Requête invalide. 'item' est manquant."}), 400
-
-    item = request.json['item']
-    
-    system_instruction = ("Tu es le gérant d'un lieu de répétition parisien. Le lieu que tu gères possède plusieurs studios.\n"
-                          "Décris ton établissement de manière engageante pour un artiste. Commence par inventer un nombre de studios que tu possèdes (ex: 'Notre centre dispose de 8 studios...').\n"
-                          "Ensuite, pour l'équipement spécifique mentionné, donne des détails techniques réalistes (marques, modèles) pour le rendre attractif.\n"
-                          "Exemple pour 'Ampli, Batterie': '...l'un de nos studios est équipé d'amplis Marshall JCM800 et Fender Twin Reverb, ainsi que d'une batterie Tama Starclassic.'\n"
-                          "Rédige une description de 3-4 phrases.")
-    
-    full_prompt = f"Nom du lieu: {item.get('name')}\nÉquipement principal à détailler: {item.get('equip')}"
-
-    try:
-        response = client.models.generate_content(model=MODEL_NAME, contents=[system_instruction, full_prompt], config=generation_config)
-        return jsonify({"description": response.text})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     # Lancer le serveur en mode debug sur le port 5000
