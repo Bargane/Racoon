@@ -162,35 +162,17 @@ Merci d'avance,`;
                     <label>Message</label>
                     <textarea class="contact-textarea" rows="9">${body}</textarea>
                 </div>
-                <button id="send-contact-message" class="contact-button">Envoyer</button>
+                <button id="copy-email-btn" class="contact-button">📋 Copier le message</button>
             </div>
         `;
 
-        rightPanel.querySelector('#send-contact-message').addEventListener('click', async () => {
-            const btn = rightPanel.querySelector('#send-contact-message');
+        rightPanel.querySelector('#copy-email-btn').addEventListener('click', () => {
+            const btn = rightPanel.querySelector('#copy-email-btn');
             const bodyText = rightPanel.querySelector('.contact-textarea').value;
-            btn.disabled = true;
-            btn.textContent = 'Envoi...';
-            try {
-                const res = await fetch(`${API_BASE_URL}/send-email`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ recipients: [studio.email], body: bodyText })
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    btn.textContent = '✅ Envoyé !';
-                    addMessage(`Email envoyé à ${studio.name}.`, 'gemini');
-                } else {
-                    btn.textContent = 'Envoyer';
-                    btn.disabled = false;
-                    addMessage(`Erreur lors de l'envoi : ${data.error}`, 'gemini');
-                }
-            } catch (e) {
-                btn.textContent = 'Envoyer';
-                btn.disabled = false;
-                addMessage('Impossible d\'envoyer l\'email.', 'gemini');
-            }
+            navigator.clipboard.writeText(bodyText).then(() => {
+                btn.textContent = '✅ Copié !';
+                setTimeout(() => { btn.textContent = '📋 Copier le message'; }, 2000);
+            });
         });
     };
 
