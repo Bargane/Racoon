@@ -146,8 +146,12 @@ def generate():
             return jsonify({"type": "clarification", "message": "Désolé, une erreur est survenue lors de l'analyse de la réponse. Veuillez réessayer."})
 
     except Exception as e:
-        # Gérer les erreurs potentielles de l'API
-        return jsonify({"error": str(e)}), 500
+        error_str = str(e)
+        if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
+            return jsonify({"type": "ai_limit", "message": "🚦 L'assistant IA est temporairement saturé (limite de requêtes atteinte). Réessayez dans quelques minutes — le site fonctionne normalement."}), 429
+        if "503" in error_str or "UNAVAILABLE" in error_str:
+            return jsonify({"type": "ai_limit", "message": "🚦 L'assistant IA est momentanément indisponible (surcharge Google). Réessayez dans quelques instants — le site fonctionne normalement."}), 503
+        return jsonify({"error": error_str}), 500
 
 @app.route('/send-email', methods=['POST'])
 def send_email():

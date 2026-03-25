@@ -53,19 +53,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
+                if (errorData.type === 'ai_limit') {
+                    if (loadingIndicator) loadingIndicator.classList.add('hidden');
+                    addMessage(errorData.message, 'gemini ai-limit');
+                    rightPanel.querySelector('.slots-title').textContent = 'Assistant indisponible';
+                    rightPanel.querySelector('.slots-grid').innerHTML = '';
+                    return;
+                }
                 throw new Error(errorData.error || `Erreur HTTP ! Statut : ${response.status}`);
             }
 
             const data = await response.json();
-            
+
             if (data.type === 'search_results') {
                 addMessage(data.message || "Voici les résultats correspondants.", 'gemini');
                 lastResults = data.results;
-                lastUserPrompt = prompt; // Sauvegarder le prompt pour la fonction de contact
+                lastUserPrompt = prompt;
                 renderStudios(data.results);
+            } else if (data.type === 'ai_limit') {
+                addMessage(data.message, 'gemini ai-limit');
+                rightPanel.querySelector('.slots-title').textContent = 'Assistant indisponible';
+                rightPanel.querySelector('.slots-grid').innerHTML = '';
             } else if (data.type === 'clarification') {
                 addMessage(data.message, 'gemini');
-                // Si c'est une conversation, on change le titre et on vide la grille.
                 rightPanel.querySelector('.slots-title').textContent = 'Conversation';
                 rightPanel.querySelector('.slots-grid').innerHTML = '';
             }

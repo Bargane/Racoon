@@ -163,6 +163,18 @@ header p {
     border-bottom-right-radius: 4px;
 }
 
+.ai-limit {
+    background-color: #fff3cd;
+    color: #856404;
+    border-left: 4px solid #ffc107;
+}
+
+[data-theme="dark"] .ai-limit {
+    background-color: #3d2e00;
+    color: #ffd666;
+    border-left: 4px solid #ffc107;
+}
+
 .gemini-message {
     background-color: var(--secondary-bg);
     color: var(--text-color);
