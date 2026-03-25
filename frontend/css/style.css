@@ -366,6 +366,23 @@ header p {
     resize: vertical;
 }
 
+.booking-link {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 6px 12px;
+    background-color: #2ecc71;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.booking-link:hover {
+    background-color: #27ae60;
+}
+
 .details-button, .contact-button {
     width: 100%;
     margin-top: 1rem;

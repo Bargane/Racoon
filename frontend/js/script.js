@@ -116,6 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="studio-info"><strong>Prix:</strong> ${studio.price_range || 'Non trouvé'}</div>
                 <div class="studio-info"><strong>Équipement:</strong> ${studio.equip || 'Non spécifié'}</div>
                 <div class="studio-relevance">${studio.relevance_reason || ''}</div>
+                ${studio.booking_url ? `<a class="booking-link" href="${studio.booking_url}" target="_blank" rel="noopener noreferrer">Réserver →</a>` : ''}
                 <button class="details-button">Voir les détails</button>
             `;
             slotsGrid.appendChild(slotElement);
