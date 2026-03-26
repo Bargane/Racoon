@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let lastResults = [];
     let lastUserPrompt = '';
-    const API_BASE_URL = window.RACOON_API_URL || 'http://127.0.0.1:5000';
+    const API_BASE_URL = window.RACOON_API_URL ?? 'http://127.0.0.1:5000';
 
     const leftPanel = document.querySelector('.left-panel');
     const tabChat = document.getElementById('tab-chat');
