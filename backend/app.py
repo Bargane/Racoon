@@ -30,7 +30,7 @@ CORS(app)
 
 # --- Configuration Globale de l'API et du Modèle ---
 
-MODEL_NAME = "gemini-2.5-flash"
+MODEL_NAME = "gemini-2.0-flash"
 
 def configure_api():
     """Charge la clé API et configure le client genai."""
@@ -53,7 +53,7 @@ generation_config = types.GenerateContentConfig(
     temperature=0.9,
     top_p=1,
     top_k=40,
-    max_output_tokens=8192,
+    max_output_tokens=4096,
 )
 
 def build_search_prompt(user_prompt):

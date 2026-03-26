@@ -72,11 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             if (loadingIndicator) loadingIndicator.classList.add('hidden');
             console.error("Erreur lors de l'appel à l'API:", error);
-            if (error instanceof TypeError) {
-                addMessage(`Désolé, je n'arrive pas à contacter le serveur. Vérifiez qu'il est bien démarré.`, 'gemini');
-            } else {
-                addMessage(`Désolé, une erreur est survenue: ${error.message}`, 'gemini');
-            }
+            addMessage('La recherche a pris trop de temps ou le serveur est indisponible. Réessayez dans quelques instants.', 'gemini');
         }
     };
 
