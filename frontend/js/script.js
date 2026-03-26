@@ -16,6 +16,22 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastUserPrompt = '';
     const API_BASE_URL = window.RACOON_API_URL || 'http://127.0.0.1:5000';
 
+    const leftPanel = document.querySelector('.left-panel');
+    const tabChat = document.getElementById('tab-chat');
+    const tabResults = document.getElementById('tab-results');
+
+    const showMobilePanel = (panel) => {
+        if (window.innerWidth > 768) return;
+        const toResults = panel === 'results';
+        leftPanel.classList.toggle('mobile-hidden', toResults);
+        rightPanel.classList.toggle('mobile-active', toResults);
+        tabChat.classList.toggle('active', !toResults);
+        tabResults.classList.toggle('active', toResults);
+    };
+
+    if (tabChat) tabChat.addEventListener('click', () => showMobilePanel('chat'));
+    if (tabResults) tabResults.addEventListener('click', () => showMobilePanel('results'));
+
     const sendMessage = async () => {
         const prompt = promptInput.value.trim();
         if (prompt === '') return;
@@ -59,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 lastResults = data.results;
                 lastUserPrompt = prompt;
                 renderStudios(data.results);
+                showMobilePanel('results');
             } else if (data.type === 'ai_limit') {
                 addMessage(data.message, 'gemini', 'ai-limit');
                 rightPanel.querySelector('.slots-title').textContent = 'Assistant indisponible';

@@ -670,3 +670,112 @@ header p {
     line-height: 1.6;
     color: var(--text-muted-color);
 }
+
+/* ── Mobile nav (caché sur desktop) ── */
+.mobile-nav {
+    display: none;
+}
+
+/* ── Responsive mobile ── */
+@media (max-width: 768px) {
+    body {
+        padding: 0;
+    }
+
+    .container {
+        height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    header {
+        padding: 0.6rem 1rem;
+    }
+
+    header p {
+        display: none;
+    }
+
+    #racoon-logo {
+        width: 48px;
+        height: 47px;
+    }
+
+    header h1 {
+        font-size: 1.4rem;
+    }
+
+    #theme-toggle {
+        top: 50%;
+        right: 0.75rem;
+    }
+
+    /* Onglets mobile */
+    .mobile-nav {
+        display: flex;
+        flex-shrink: 0;
+        border-bottom: 1px solid var(--border-color);
+        background-color: var(--container-bg);
+        transition: background-color 0.3s ease;
+    }
+
+    .mobile-tab {
+        flex: 1;
+        padding: 0.65rem;
+        border: none;
+        border-bottom: 2px solid transparent;
+        background: none;
+        font-size: 0.9rem;
+        font-family: inherit;
+        color: var(--text-muted-color);
+        cursor: pointer;
+        transition: color 0.2s, border-color 0.2s;
+    }
+
+    .mobile-tab.active {
+        color: var(--accent-color);
+        border-bottom-color: var(--accent-color);
+        font-weight: 600;
+    }
+
+    /* Panneaux en superposition, glissement horizontal */
+    .main-content {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .left-panel {
+        position: absolute;
+        inset: 0;
+        min-width: unset;
+        border-right: none;
+        transform: translateX(0);
+        transition: transform 0.28s ease;
+        background-color: var(--container-bg);
+    }
+
+    .left-panel.mobile-hidden {
+        transform: translateX(-100%);
+    }
+
+    .right-panel {
+        position: absolute;
+        inset: 0;
+        min-width: unset;
+        padding: 1rem;
+        transform: translateX(100%);
+        transition: transform 0.28s ease;
+    }
+
+    .right-panel.mobile-active {
+        transform: translateX(0);
+    }
+
+    /* Footer compact sur mobile */
+    #site-footer {
+        font-size: 0.68rem;
+        padding: 0.4rem 0.75rem;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+}
