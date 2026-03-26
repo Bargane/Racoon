@@ -1,4 +1,5 @@
 import os
+import time
 from google import genai
 from google.genai import types
 from flask import Flask, request, jsonify, render_template
@@ -8,10 +9,8 @@ import json
 import re
 from datetime import datetime
 
-# Charger les variables d'environnement du fichier .env
 load_dotenv()
 
-# Définir les chemins de manière robuste
 backend_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(backend_dir)
 frontend_dir = os.path.join(project_root, 'frontend')
@@ -25,9 +24,10 @@ CORS(app)
 
 MODEL_NAME = "gemini-2.0-flash"
 SECRET_PHRASE = "la blanquette est bonne"
+MAX_RETRIES = 3
+RETRY_DELAY = 5  # secondes
 
 def configure_api():
-    """Charge la clé API et configure le client genai."""
     try:
         api_key = os.environ["GEMINI_API_KEY"]
         print(f"API Gemini configurée avec succès pour le modèle : {MODEL_NAME}")
@@ -50,7 +50,6 @@ generation_config = types.GenerateContentConfig(
 )
 
 def build_search_prompt(user_prompt):
-    """Construit le prompt pour filtrer les vrais studios depuis la base de données."""
     system_instruction = (
         "Tu es un assistant expert qui aide des artistes (musiciens, danseurs) à trouver des studios de répétition à Paris.\n"
         "Tu disposes d'une base de données de studios RÉELS. Tu dois UNIQUEMENT utiliser ces studios — n'en invente aucun.\n\n"
@@ -93,7 +92,6 @@ def build_search_prompt(user_prompt):
 
 @app.route('/', methods=['GET'])
 def index():
-    """Sert la page HTML principale de l'application."""
     return render_template('index.html')
 
 
@@ -118,34 +116,48 @@ def generate():
 
     full_prompt = build_search_prompt(user_prompt)
 
-    try:
-        response = client.models.generate_content(model=MODEL_NAME, contents=full_prompt, config=generation_config)
-        response_text = response.text
-
-        json_match = re.search(r"```json\s*(.*?)\s*```", response_text, re.DOTALL)
-        if not json_match:
-            return jsonify({"type": "clarification", "message": "Je ne suis pas sûr de comprendre. Pouvez-vous reformuler votre recherche ?"})
-
+    last_error = None
+    for attempt in range(MAX_RETRIES):
         try:
-            json_str = json_match.group(1)
-            response_data = json.loads(json_str)
+            response = client.models.generate_content(model=MODEL_NAME, contents=full_prompt, config=generation_config)
+            response_text = response.text
 
-            if response_data.get("type") == "search_results":
-                results = response_data.get("data", [])
-                return jsonify({"type": "search_results", "message": "Voici les studios qui correspondent à votre recherche.", "results": results})
+            json_match = re.search(r"```json\s*(.*?)\s*```", response_text, re.DOTALL)
+            if not json_match:
+                return jsonify({"type": "clarification", "message": "Je ne suis pas sûr de comprendre. Pouvez-vous reformuler votre recherche ?"})
 
-            return jsonify(response_data)
+            try:
+                json_str = json_match.group(1)
+                response_data = json.loads(json_str)
 
-        except json.JSONDecodeError:
-            return jsonify({"type": "clarification", "message": "Désolé, une erreur est survenue lors de l'analyse de la réponse. Veuillez réessayer."})
+                if response_data.get("type") == "search_results":
+                    results = response_data.get("data", [])
+                    return jsonify({"type": "search_results", "message": "Voici les studios qui correspondent à votre recherche.", "results": results})
 
-    except Exception as e:
-        error_str = str(e)
-        if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
-            return jsonify({"type": "ai_limit", "message": "🚦 L'assistant IA est temporairement saturé (limite de requêtes atteinte). Réessayez dans quelques minutes — le site fonctionne normalement."}), 429
-        if "503" in error_str or "UNAVAILABLE" in error_str:
-            return jsonify({"type": "ai_limit", "message": "🚦 L'assistant IA est momentanément indisponible (surcharge Google). Réessayez dans quelques instants — le site fonctionne normalement."}), 503
-        return jsonify({"error": error_str}), 500
+                return jsonify(response_data)
+
+            except json.JSONDecodeError:
+                return jsonify({"type": "clarification", "message": "Désolé, une erreur est survenue lors de l'analyse de la réponse. Veuillez réessayer."})
+
+        except Exception as e:
+            error_str = str(e)
+            last_error = error_str
+
+            if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
+                if attempt < MAX_RETRIES - 1:
+                    time.sleep(RETRY_DELAY)
+                    continue
+                return jsonify({"type": "ai_limit", "message": "🚦 L'assistant IA est temporairement saturé (limite de requêtes atteinte). Réessayez dans quelques minutes — le site fonctionne normalement."}), 429
+
+            if "503" in error_str or "UNAVAILABLE" in error_str:
+                if attempt < MAX_RETRIES - 1:
+                    time.sleep(RETRY_DELAY)
+                    continue
+                return jsonify({"type": "ai_limit", "message": "🚦 L'assistant IA est momentanément indisponible (surcharge Google). Réessayez dans quelques instants — le site fonctionne normalement."}), 503
+
+            return jsonify({"error": last_error}), 500
+
+    return jsonify({"error": last_error}), 500
 
 
 if __name__ == '__main__':
