@@ -1,7 +1,6 @@
 import os
 import time
-from google import genai
-from google.genai import types
+from groq import Groq
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -22,18 +21,18 @@ app = Flask(__name__,
 
 CORS(app)
 
-MODEL_NAME = "gemini-2.0-flash"
+MODEL_NAME = "llama-3.3-70b-versatile"
 SECRET_PHRASE = "la blanquette est bonne"
 MAX_RETRIES = 3
-RETRY_DELAY = 5  # secondes
+RETRY_DELAY = 5
 
 def configure_api():
     try:
-        api_key = os.environ["GEMINI_API_KEY"]
-        print(f"API Gemini configurée avec succès pour le modèle : {MODEL_NAME}")
-        return genai.Client(api_key=api_key)
+        api_key = os.environ["GROQ_API_KEY"]
+        print(f"API Groq configurée avec succès pour le modèle : {MODEL_NAME}")
+        return Groq(api_key=api_key)
     except KeyError:
-        print("ERREUR : Clé API Gemini non trouvée. Assurez-vous de l'avoir définie dans le fichier .env")
+        print("ERREUR : Clé API Groq non trouvée. Assurez-vous de l'avoir définie dans le fichier .env")
         exit()
 
 client = configure_api()
@@ -41,13 +40,6 @@ client = configure_api()
 studios_path = os.path.join(backend_dir, 'studios.json')
 with open(studios_path, 'r', encoding='utf-8') as f:
     STUDIOS_DB = json.load(f)
-
-generation_config = types.GenerateContentConfig(
-    temperature=0.9,
-    top_p=1,
-    top_k=40,
-    max_output_tokens=4096,
-)
 
 def build_search_prompt(user_prompt):
     system_instruction = (
@@ -102,7 +94,7 @@ def generate():
 
     user_prompt = request.json['prompt']
 
-    # Phrase secrète : affiche tous les studios sans appel à l'API Gemini
+    # Phrase secrète : affiche tous les studios sans appel API
     if user_prompt.strip().lower() == SECRET_PHRASE:
         results = [
             {**studio, "relevance_reason": "Mode admin — studio inclus depuis la base de données complète."}
@@ -115,12 +107,17 @@ def generate():
         })
 
     full_prompt = build_search_prompt(user_prompt)
-
     last_error = None
+
     for attempt in range(MAX_RETRIES):
         try:
-            response = client.models.generate_content(model=MODEL_NAME, contents=full_prompt, config=generation_config)
-            response_text = response.text
+            response = client.chat.completions.create(
+                model=MODEL_NAME,
+                messages=[{"role": "user", "content": full_prompt}],
+                temperature=0.9,
+                max_tokens=4096,
+            )
+            response_text = response.choices[0].message.content
 
             json_match = re.search(r"```json\s*(.*?)\s*```", response_text, re.DOTALL)
             if not json_match:
@@ -143,17 +140,17 @@ def generate():
             error_str = str(e)
             last_error = error_str
 
-            if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
+            if "429" in error_str or "rate_limit" in error_str.lower():
                 if attempt < MAX_RETRIES - 1:
                     time.sleep(RETRY_DELAY)
                     continue
                 return jsonify({"type": "ai_limit", "message": "🚦 L'assistant IA est temporairement saturé (limite de requêtes atteinte). Réessayez dans quelques minutes — le site fonctionne normalement."}), 429
 
-            if "503" in error_str or "UNAVAILABLE" in error_str:
+            if "503" in error_str or "unavailable" in error_str.lower():
                 if attempt < MAX_RETRIES - 1:
                     time.sleep(RETRY_DELAY)
                     continue
-                return jsonify({"type": "ai_limit", "message": "🚦 L'assistant IA est momentanément indisponible (surcharge Google). Réessayez dans quelques instants — le site fonctionne normalement."}), 503
+                return jsonify({"type": "ai_limit", "message": "🚦 L'assistant IA est momentanément indisponible. Réessayez dans quelques instants — le site fonctionne normalement."}), 503
 
             return jsonify({"error": last_error}), 500
 
