@@ -12,25 +12,19 @@ from datetime import datetime
 load_dotenv()
 
 # Définir les chemins de manière robuste
-# Chemin absolu du dossier où se trouve app.py (le dossier backend)
 backend_dir = os.path.dirname(os.path.abspath(__file__))
-# Chemin du dossier parent (la racine du projet, Racoon)
 project_root = os.path.dirname(backend_dir)
-# Chemin du dossier frontend
 frontend_dir = os.path.join(project_root, 'frontend')
 
-# Configure Flask pour qu'il trouve les fichiers du frontend.
 app = Flask(__name__,
             template_folder=frontend_dir,
             static_folder=frontend_dir,
             static_url_path='')
 
-# Activer CORS pour autoriser les requêtes depuis votre front-end
 CORS(app)
 
-# --- Configuration Globale de l'API et du Modèle ---
-
 MODEL_NAME = "gemini-2.0-flash"
+SECRET_PHRASE = "la blanquette est bonne"
 
 def configure_api():
     """Charge la clé API et configure le client genai."""
@@ -44,7 +38,6 @@ def configure_api():
 
 client = configure_api()
 
-# Chargement de la base de studios réels au démarrage
 studios_path = os.path.join(backend_dir, 'studios.json')
 with open(studios_path, 'r', encoding='utf-8') as f:
     STUDIOS_DB = json.load(f)
@@ -106,14 +99,22 @@ def index():
 
 @app.route('/generate', methods=['POST'])
 def generate():
-    """
-    Point de terminaison pour générer du contenu avec l'API Gemini.
-    """
-    # Vérifier si la requête contient du JSON et la clé 'prompt'
     if not request.json or 'prompt' not in request.json:
         return jsonify({"error": "Requête invalide. 'prompt' est manquant."}), 400
 
     user_prompt = request.json['prompt']
+
+    # Phrase secrète : affiche tous les studios sans appel à l'API Gemini
+    if user_prompt.strip().lower() == SECRET_PHRASE:
+        results = [
+            {**studio, "relevance_reason": "Mode admin — studio inclus depuis la base de données complète."}
+            for studio in STUDIOS_DB
+        ]
+        return jsonify({
+            "type": "search_results",
+            "message": "Voici tous les studios de la base de données.",
+            "results": results
+        })
 
     full_prompt = build_search_prompt(user_prompt)
 
@@ -121,25 +122,21 @@ def generate():
         response = client.models.generate_content(model=MODEL_NAME, contents=full_prompt, config=generation_config)
         response_text = response.text
 
-        # Extraire le JSON d'un bloc de code markdown
         json_match = re.search(r"```json\s*(.*?)\s*```", response_text, re.DOTALL)
         if not json_match:
-            # Fallback si l'IA ne retourne pas de JSON formaté
             return jsonify({"type": "clarification", "message": "Je ne suis pas sûr de comprendre. Pouvez-vous reformuler votre recherche ?"})
 
         try:
             json_str = json_match.group(1)
             response_data = json.loads(json_str)
-            
+
             if response_data.get("type") == "search_results":
                 results = response_data.get("data", [])
                 return jsonify({"type": "search_results", "message": "Voici les studios qui correspondent à votre recherche.", "results": results})
-            
-            # Si c'est une clarification ou un autre type, on le retourne directement
+
             return jsonify(response_data)
 
         except json.JSONDecodeError:
-            # Si le JSON est malformé, on retourne un message d'erreur clair
             return jsonify({"type": "clarification", "message": "Désolé, une erreur est survenue lors de l'analyse de la réponse. Veuillez réessayer."})
 
     except Exception as e:
@@ -152,5 +149,4 @@ def generate():
 
 
 if __name__ == '__main__':
-    # Lancer le serveur en mode debug sur le port 5000
     app.run(debug=True, port=5000)
