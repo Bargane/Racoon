@@ -1,15 +1,16 @@
-import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Box, IconButton, Tooltip } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
 import { useAuth } from '../context/AuthContext';
+import { useColorMode } from '../context/ColorModeContext';
 
 export default function Navbar() {
     const { user, logout } = useAuth();
+    const { mode, toggle } = useColorMode();
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        logout();
-        navigate('/');
-    };
+    const handleLogout = () => { logout(); navigate('/'); };
 
     return (
         <AppBar position="static" color="default" elevation={1}>
@@ -33,7 +34,7 @@ export default function Navbar() {
                             {user.role === 'owner' && (
                                 <>
                                     <Button component={RouterLink} to="/owner/dashboard" color="inherit">
-                                        Mon tableau de bord
+                                        Tableau de bord
                                     </Button>
                                     <Button component={RouterLink} to="/studios/new" color="inherit">
                                         Mon studio
@@ -50,6 +51,11 @@ export default function Navbar() {
                             </Button>
                         </>
                     )}
+                    <Tooltip title={mode === 'dark' ? 'Mode clair' : 'Mode sombre'}>
+                        <IconButton onClick={toggle} color="inherit" size="small">
+                            {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+                        </IconButton>
+                    </Tooltip>
                 </Box>
             </Toolbar>
         </AppBar>
