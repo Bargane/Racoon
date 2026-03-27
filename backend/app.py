@@ -82,6 +82,42 @@ def build_search_prompt(user_prompt):
     )
 
 
+@app.route('/generate-email', methods=['POST'])
+def generate_email():
+    if not request.json or 'studio_name' not in request.json or 'prompt' not in request.json:
+        return jsonify({"error": "Paramètres manquants."}), 400
+
+    studio_name = request.json['studio_name']
+    user_prompt = request.json['prompt']
+
+    try:
+        response = client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "Tu rédiges des emails courts et naturels pour contacter des studios de répétition à Paris. "
+                        "L'email doit être direct, poli, et bien formulé — ni trop formel ni familier. "
+                        "Réponds UNIQUEMENT avec le corps de l'email (sans objet, sans ligne d'expéditeur). "
+                        "Commence par 'Bonjour,' et termine par 'Merci !'."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": f"Studio à contacter : {studio_name}\nDemande de l'artiste : {user_prompt}"
+                }
+            ],
+            temperature=0.75,
+            max_tokens=350,
+        )
+        email_body = response.choices[0].message.content.strip()
+        return jsonify({"email_body": email_body})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')

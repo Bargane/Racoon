@@ -155,7 +155,7 @@ Merci !`;
     };
 
     const showEmailView = (studio) => {
-        const { subject, body } = buildEmailTemplate(studio, lastUserPrompt);
+        const { subject } = buildEmailTemplate(studio, lastUserPrompt);
 
         rightPanel.innerHTML = `
             <div class="contact-view">
@@ -174,11 +174,28 @@ Merci !`;
                 </div>
                 <div class="email-field">
                     <label>Message</label>
-                    <textarea class="contact-textarea" rows="9">${body}</textarea>
+                    <textarea class="contact-textarea" rows="9" placeholder="Génération en cours...">Génération en cours...</textarea>
                 </div>
-                <button id="copy-email-btn" class="contact-button">📋 Copier le message</button>
+                <button id="copy-email-btn" class="contact-button" disabled>📋 Copier le message</button>
             </div>
         `;
+
+        fetch(`${API_BASE_URL}/generate-email`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ studio_name: studio.name, prompt: lastUserPrompt }),
+        })
+        .then(r => r.json())
+        .then(data => {
+            const textarea = rightPanel.querySelector('.contact-textarea');
+            const copyBtn = rightPanel.querySelector('#copy-email-btn');
+            textarea.value = data.email_body || buildEmailTemplate(studio, lastUserPrompt).body;
+            copyBtn.disabled = false;
+        })
+        .catch(() => {
+            rightPanel.querySelector('.contact-textarea').value = buildEmailTemplate(studio, lastUserPrompt).body;
+            rightPanel.querySelector('#copy-email-btn').disabled = false;
+        });
 
         rightPanel.querySelector('#copy-email-btn').addEventListener('click', () => {
             const btn = rightPanel.querySelector('#copy-email-btn');
