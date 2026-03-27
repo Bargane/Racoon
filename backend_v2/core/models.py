@@ -27,6 +27,8 @@ class Studio(models.Model):
     website = models.URLField(blank=True)
     booking_url = models.URLField(blank=True)
     price_range = models.CharField(max_length=100, blank=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

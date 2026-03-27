@@ -24,6 +24,7 @@ export default function Navbar() {
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                     <Button component={RouterLink} to="/studios" color="inherit">Studios</Button>
+                    <Button component={RouterLink} to="/map" color="inherit">Carte</Button>
                     {user ? (
                         <>
                             <Button component={RouterLink} to="/dashboard" color="inherit">

@@ -8,6 +8,8 @@ from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.conf import settings
 from django.db.models import Avg
+import urllib.request
+import json as json_lib
 from .models import Studio, AvailabilitySlot, StudioRoom, Booking, Review
 from .serializers import RegisterSerializer, UserSerializer, StudioSerializer, AvailabilitySlotSerializer, BookingSerializer, ReviewSerializer
 
@@ -76,8 +78,26 @@ def studios_list(request):
     serializer = StudioSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    serializer.save(owner=request.user)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
+    studio = serializer.save(owner=request.user)
+    _geocode_studio(studio)
+    return Response(StudioSerializer(studio).data, status=status.HTTP_201_CREATED)
+
+
+def _geocode_studio(studio):
+    if studio.latitude and studio.longitude:
+        return
+    try:
+        query = urllib.request.quote(studio.address)
+        url = f"https://nominatim.openstreetmap.org/search?q={query}&format=json&limit=1"
+        req = urllib.request.Request(url, headers={'User-Agent': 'Racoon-V2/1.0'})
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            results = json_lib.loads(resp.read())
+        if results:
+            studio.latitude = float(results[0]['lat'])
+            studio.longitude = float(results[0]['lon'])
+            studio.save(update_fields=['latitude', 'longitude'])
+    except Exception:
+        pass
 
 
 @api_view(['GET', 'PUT', 'DELETE'])

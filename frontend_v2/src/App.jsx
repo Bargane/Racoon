@@ -13,6 +13,7 @@ import BookingConfirm from './pages/BookingConfirm';
 import Dashboard from './pages/Dashboard';
 import OwnerDashboard from './pages/OwnerDashboard';
 import Payment from './pages/Payment';
+import StudioMap from './pages/StudioMap';
 
 const theme = createTheme({
     palette: {
@@ -36,6 +37,7 @@ export default function App() {
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
                         <Route path="/studios" element={<Studios />} />
+                        <Route path="/map" element={<StudioMap />} />
                         <Route path="/studios/:id" element={<StudioDetail />} />
                         <Route path="/studios/new" element={
                             <ProtectedRoute><StudioCreate /></ProtectedRoute>
