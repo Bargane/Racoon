@@ -39,8 +39,31 @@ def me(request):
 @api_view(['GET', 'POST'])
 def studios_list(request):
     if request.method == 'GET':
-        studios = Studio.objects.filter(is_active=True).select_related('owner')
-        return Response(StudioSerializer(studios, many=True).data)
+        qs = Studio.objects.filter(is_active=True).select_related('owner')
+        q = request.query_params
+        if q.get('type'):
+            qs = qs.filter(rooms__room_type=q['type']).distinct()
+        if q.get('price_max'):
+            try:
+                qs = qs.filter(rooms__price_per_hour__lte=float(q['price_max'])).distinct()
+            except ValueError:
+                pass
+        if q.get('capacity'):
+            try:
+                qs = qs.filter(rooms__capacity__gte=int(q['capacity'])).distinct()
+            except ValueError:
+                pass
+        if q.get('date'):
+            from datetime import datetime
+            try:
+                day = datetime.fromisoformat(q['date']).date()
+                qs = qs.filter(
+                    rooms__slots__start_time__date=day,
+                    rooms__slots__is_booked=False,
+                ).distinct()
+            except ValueError:
+                pass
+        return Response(StudioSerializer(qs, many=True).data)
 
     if not request.user.is_authenticated:
         return Response({'detail': 'Authentification requise.'}, status=status.HTTP_401_UNAUTHORIZED)

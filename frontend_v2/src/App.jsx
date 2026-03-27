@@ -8,6 +8,7 @@ import Register from './pages/Register';
 import StudioCreate from './pages/StudioCreate';
 import StudioDetail from './pages/StudioDetail';
 import AvailabilityManager from './pages/AvailabilityManager';
+import Studios from './pages/Studios';
 
 const theme = createTheme({
     palette: {
@@ -30,6 +31,7 @@ export default function App() {
                         <Route path="/" element={<Home />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
+                        <Route path="/studios" element={<Studios />} />
                         <Route path="/studios/:id" element={<StudioDetail />} />
                         <Route path="/studios/new" element={
                             <ProtectedRoute><StudioCreate /></ProtectedRoute>
