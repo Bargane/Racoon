@@ -10,4 +10,6 @@ urlpatterns = [
     path('auth/me/', views.me),
     path('studios/', views.studios_list),
     path('studios/<int:pk>/', views.studio_detail),
+    path('studios/<int:pk>/availability/', views.studio_availability),
+    path('studios/<int:pk>/availability/<int:slot_id>/', views.delete_slot),
 ]
