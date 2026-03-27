@@ -17,3 +17,13 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'role', 'phone')
+
+
+class StudioSerializer(serializers.ModelSerializer):
+    owner = UserSerializer(read_only=True)
+
+    class Meta:
+        from .models import Studio
+        model = Studio
+        fields = '__all__'
+        read_only_fields = ('owner', 'created_at', 'updated_at')

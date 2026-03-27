@@ -5,6 +5,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import StudioCreate from './pages/StudioCreate';
+import StudioDetail from './pages/StudioDetail';
 
 const theme = createTheme({
     palette: {
@@ -27,6 +29,10 @@ export default function App() {
                         <Route path="/" element={<Home />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
+                        <Route path="/studios/:id" element={<StudioDetail />} />
+                        <Route path="/studios/new" element={
+                            <ProtectedRoute><StudioCreate /></ProtectedRoute>
+                        } />
                     </Routes>
                 </BrowserRouter>
             </AuthProvider>
