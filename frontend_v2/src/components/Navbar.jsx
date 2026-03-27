@@ -30,9 +30,14 @@ export default function Navbar() {
                                 Mes réservations
                             </Button>
                             {user.role === 'owner' && (
-                                <Button component={RouterLink} to="/studios/new" color="inherit">
-                                    Mon studio
-                                </Button>
+                                <>
+                                    <Button component={RouterLink} to="/owner/dashboard" color="inherit">
+                                        Mon tableau de bord
+                                    </Button>
+                                    <Button component={RouterLink} to="/studios/new" color="inherit">
+                                        Mon studio
+                                    </Button>
+                                </>
                             )}
                             <Button onClick={handleLogout} color="inherit">Déconnexion</Button>
                         </>

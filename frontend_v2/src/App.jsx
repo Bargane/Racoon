@@ -11,6 +11,7 @@ import AvailabilityManager from './pages/AvailabilityManager';
 import Studios from './pages/Studios';
 import BookingConfirm from './pages/BookingConfirm';
 import Dashboard from './pages/Dashboard';
+import OwnerDashboard from './pages/OwnerDashboard';
 
 const theme = createTheme({
     palette: {
@@ -40,6 +41,9 @@ export default function App() {
                         } />
                         <Route path="/dashboard" element={
                             <ProtectedRoute><Dashboard /></ProtectedRoute>
+                        } />
+                        <Route path="/owner/dashboard" element={
+                            <ProtectedRoute><OwnerDashboard /></ProtectedRoute>
                         } />
                         <Route path="/studios/:studioId/book/:slotId" element={
                             <ProtectedRoute><BookingConfirm /></ProtectedRoute>

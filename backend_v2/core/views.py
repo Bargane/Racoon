@@ -207,3 +207,12 @@ def booking_detail(request, pk):
         booking.slot.save()
 
     return Response(BookingSerializer(booking).data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def owner_bookings(request):
+    bookings = Booking.objects.filter(
+        slot__room__studio__owner=request.user
+    ).select_related('slot__room__studio', 'artist').order_by('slot__start_time')
+    return Response(BookingSerializer(bookings, many=True).data)
