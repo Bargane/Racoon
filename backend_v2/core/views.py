@@ -7,8 +7,9 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.conf import settings
-from .models import Studio, AvailabilitySlot, StudioRoom, Booking
-from .serializers import RegisterSerializer, UserSerializer, StudioSerializer, AvailabilitySlotSerializer, BookingSerializer
+from django.db.models import Avg
+from .models import Studio, AvailabilitySlot, StudioRoom, Booking, Review
+from .serializers import RegisterSerializer, UserSerializer, StudioSerializer, AvailabilitySlotSerializer, BookingSerializer, ReviewSerializer
 
 
 @api_view(['GET'])
@@ -266,3 +267,34 @@ def owner_bookings(request):
         slot__room__studio__owner=request.user
     ).select_related('slot__room__studio', 'artist').order_by('slot__start_time')
     return Response(BookingSerializer(bookings, many=True).data)
+
+
+@api_view(['GET', 'POST'])
+def studio_reviews(request, pk):
+    studio = get_object_or_404(Studio, pk=pk)
+
+    if request.method == 'GET':
+        reviews = studio.reviews.select_related('artist').order_by('-created_at')
+        avg = reviews.aggregate(avg=Avg('rating'))['avg']
+        return Response({
+            'average': round(avg, 1) if avg else None,
+            'count': reviews.count(),
+            'reviews': ReviewSerializer(reviews, many=True).data,
+        })
+
+    if not request.user.is_authenticated:
+        return Response({'detail': 'Authentification requise.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    has_booking = Booking.objects.filter(
+        artist=request.user,
+        slot__room__studio=studio,
+        status='confirmed',
+    ).exists()
+    if not has_booking:
+        return Response({'detail': 'Vous devez avoir effectué une réservation confirmée pour laisser un avis.'}, status=status.HTTP_403_FORBIDDEN)
+
+    serializer = ReviewSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer.save(artist=request.user, studio=studio)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)

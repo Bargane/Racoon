@@ -87,3 +87,17 @@ class Booking(models.Model):
 
     def __str__(self):
         return f"Résa {self.artist.username} — {self.slot}"
+
+
+class Review(models.Model):
+    artist = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
+    studio = models.ForeignKey(Studio, on_delete=models.CASCADE, related_name='reviews')
+    rating = models.PositiveSmallIntegerField()  # 1-5
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('artist', 'studio')
+
+    def __str__(self):
+        return f"{self.artist.username} → {self.studio.name} ({self.rating}★)"

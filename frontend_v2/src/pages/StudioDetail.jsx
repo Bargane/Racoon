@@ -4,6 +4,7 @@ import { Box, Typography, Chip, Button, CircularProgress, Alert } from '@mui/mat
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
+import Reviews from '../components/Reviews';
 
 export default function StudioDetail() {
     const { id } = useParams();
@@ -48,6 +49,8 @@ export default function StudioDetail() {
                         <Button variant="outlined" color="error" onClick={handleDelete}>Supprimer</Button>
                     </Box>
                 )}
+
+                <Reviews studioId={id} />
             </Box>
         </Layout>
     );

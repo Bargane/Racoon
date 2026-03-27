@@ -66,3 +66,18 @@ class BookingSerializer(serializers.ModelSerializer):
         if slot.is_booked:
             raise serializers.ValidationError("Ce créneau est déjà réservé.")
         return slot
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    artist = UserSerializer(read_only=True)
+
+    class Meta:
+        from .models import Review
+        model = Review
+        fields = ('id', 'artist', 'rating', 'comment', 'created_at')
+        read_only_fields = ('artist', 'created_at')
+
+    def validate_rating(self, value):
+        if not 1 <= value <= 5:
+            raise serializers.ValidationError("La note doit être entre 1 et 5.")
+        return value
