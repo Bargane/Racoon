@@ -183,10 +183,25 @@ Merci !`;
         rightPanel.querySelector('#copy-email-btn').addEventListener('click', () => {
             const btn = rightPanel.querySelector('#copy-email-btn');
             const bodyText = rightPanel.querySelector('.contact-textarea').value;
-            navigator.clipboard.writeText(bodyText).then(() => {
+            const onCopied = () => {
                 btn.textContent = '✅ Copié !';
                 setTimeout(() => { btn.textContent = '📋 Copier le message'; }, 2000);
-            });
+            };
+            const fallbackCopy = () => {
+                const ta = document.createElement('textarea');
+                ta.value = bodyText;
+                ta.style.cssText = 'position:fixed;opacity:0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                onCopied();
+            };
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(bodyText).then(onCopied).catch(fallbackCopy);
+            } else {
+                fallbackCopy();
+            }
         });
     };
 
