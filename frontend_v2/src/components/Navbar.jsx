@@ -1,7 +1,16 @@
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/');
+    };
+
     return (
         <AppBar position="static" color="default" elevation={1}>
             <Toolbar>
@@ -13,16 +22,28 @@ export default function Navbar() {
                 >
                     🦝 Racoon
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button component={RouterLink} to="/studios" color="inherit">
-                        Studios
-                    </Button>
-                    <Button component={RouterLink} to="/login" color="inherit">
-                        Connexion
-                    </Button>
-                    <Button component={RouterLink} to="/register" variant="contained" disableElevation>
-                        S'inscrire
-                    </Button>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <Button component={RouterLink} to="/studios" color="inherit">Studios</Button>
+                    {user ? (
+                        <>
+                            <Button component={RouterLink} to="/dashboard" color="inherit">
+                                Mes réservations
+                            </Button>
+                            {user.role === 'owner' && (
+                                <Button component={RouterLink} to="/studios/new" color="inherit">
+                                    Mon studio
+                                </Button>
+                            )}
+                            <Button onClick={handleLogout} color="inherit">Déconnexion</Button>
+                        </>
+                    ) : (
+                        <>
+                            <Button component={RouterLink} to="/login" color="inherit">Connexion</Button>
+                            <Button component={RouterLink} to="/register" variant="contained" disableElevation>
+                                S'inscrire
+                            </Button>
+                        </>
+                    )}
                 </Box>
             </Toolbar>
         </AppBar>
