@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+*.egg-info/
+dist/
+build/
+
+# Django
+backend_v2/db.sqlite3
+backend_v2/staticfiles/
+
+# Node
+node_modules/
+frontend_v2/dist/
+frontend_v2/.env
+
+# Misc
+.DS_Store
+*.log
