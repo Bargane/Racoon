@@ -51,3 +51,18 @@ class AvailabilitySlotSerializer(serializers.ModelSerializer):
         if overlap.exists():
             raise serializers.ValidationError("Ce créneau chevauche un créneau existant.")
         return data
+
+
+class BookingSerializer(serializers.ModelSerializer):
+    artist = UserSerializer(read_only=True)
+
+    class Meta:
+        from .models import Booking
+        model = Booking
+        fields = ('id', 'artist', 'slot', 'status', 'total_price', 'notes', 'created_at')
+        read_only_fields = ('artist', 'total_price', 'created_at')
+
+    def validate_slot(self, slot):
+        if slot.is_booked:
+            raise serializers.ValidationError("Ce créneau est déjà réservé.")
+        return slot

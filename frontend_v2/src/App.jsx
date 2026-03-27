@@ -9,6 +9,7 @@ import StudioCreate from './pages/StudioCreate';
 import StudioDetail from './pages/StudioDetail';
 import AvailabilityManager from './pages/AvailabilityManager';
 import Studios from './pages/Studios';
+import BookingConfirm from './pages/BookingConfirm';
 
 const theme = createTheme({
     palette: {
@@ -35,6 +36,9 @@ export default function App() {
                         <Route path="/studios/:id" element={<StudioDetail />} />
                         <Route path="/studios/new" element={
                             <ProtectedRoute><StudioCreate /></ProtectedRoute>
+                        } />
+                        <Route path="/studios/:studioId/book/:slotId" element={
+                            <ProtectedRoute><BookingConfirm /></ProtectedRoute>
                         } />
                         <Route path="/studios/:id/availability" element={
                             <ProtectedRoute><AvailabilityManager /></ProtectedRoute>

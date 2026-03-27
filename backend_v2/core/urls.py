@@ -12,4 +12,6 @@ urlpatterns = [
     path('studios/<int:pk>/', views.studio_detail),
     path('studios/<int:pk>/availability/', views.studio_availability),
     path('studios/<int:pk>/availability/<int:slot_id>/', views.delete_slot),
+    path('bookings/', views.bookings_list),
+    path('bookings/<int:pk>/', views.booking_detail),
 ]
