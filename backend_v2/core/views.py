@@ -10,6 +10,8 @@ from django.conf import settings
 from django.db.models import Avg
 import urllib.request
 import json as json_lib
+import re
+from groq import Groq
 from .models import Studio, AvailabilitySlot, StudioRoom, Booking, Review
 from .serializers import RegisterSerializer, UserSerializer, StudioSerializer, AvailabilitySlotSerializer, BookingSerializer, ReviewSerializer
 
@@ -318,3 +320,76 @@ def studio_reviews(request, pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     serializer.save(artist=request.user, studio=studio)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def recommend(request):
+    prompt = (request.data.get('prompt') or '').strip()
+    if not prompt:
+        return Response({'error': 'prompt manquant.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    studios = Studio.objects.filter(is_active=True).prefetch_related('reviews', 'rooms')
+    studios_data = []
+    for s in studios:
+        avg = s.reviews.aggregate(avg=Avg('rating'))['avg']
+        studios_data.append({
+            'id': s.id,
+            'name': s.name,
+            'address': s.address,
+            'arrondissement': s.arrondissement,
+            'price_range': s.price_range,
+            'description': s.description,
+            'avg_rating': round(avg, 1) if avg else None,
+            'room_types': list(s.rooms.values_list('room_type', flat=True).distinct()),
+            'capacity_max': s.rooms.order_by('-capacity').values_list('capacity', flat=True).first(),
+        })
+
+    system_prompt = (
+        "Tu es un assistant expert en studios de répétition à Paris. "
+        "Analyse la demande de l'artiste et retourne une liste JSON des studios les plus pertinents triés par pertinence. "
+        "Pour chaque studio retourné, ajoute un champ 'relevance_reason' (1 phrase). "
+        "Réponds UNIQUEMENT avec un bloc ```json contenant une liste d'objets avec les champs: id, relevance_reason. "
+        "Retourne au maximum 5 studios."
+    )
+
+    user_msg = (
+        f"Demande: {prompt}\n\n"
+        f"Studios disponibles:\n{json_lib.dumps(studios_data, ensure_ascii=False)}"
+    )
+
+    try:
+        client = Groq(api_key=settings.GROQ_API_KEY)
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_msg},
+            ],
+            temperature=0.7,
+            max_tokens=1024,
+        )
+        text = response.choices[0].message.content
+        match = re.search(r'```json\s*(.*?)\s*```', text, re.DOTALL)
+        if not match:
+            return Response({'type': 'clarification', 'message': text})
+
+        ranked = json_lib.loads(match.group(1))
+        studio_map = {s.id: s for s in studios}
+        results = []
+        for item in ranked:
+            s = studio_map.get(item.get('id'))
+            if not s:
+                continue
+            avg = s.reviews.aggregate(avg=Avg('rating'))['avg']
+            results.append({
+                **StudioSerializer(s).data,
+                'relevance_reason': item.get('relevance_reason', ''),
+                'avg_rating': round(avg, 1) if avg else None,
+                'ai_pick': True,
+            })
+
+        return Response({'type': 'search_results', 'results': results})
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
