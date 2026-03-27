@@ -2,6 +2,7 @@
   {
     "id": "studio-bleu-10",
     "name": "Studio Bleu",
+    "room_count": 63,
     "address": "7/9 Rue des Petites Écuries, 75010 Paris",
     "arrondissement": "10ème",
     "phone": "01 45 23 16 03",
@@ -21,6 +22,7 @@
   {
     "id": "studio-luna-rossa",
     "name": "Studio Luna Rossa",
+    "room_count": 30,
     "address": "24 Rue Primo Levi, 75013 Paris",
     "arrondissement": "13ème",
     "phone": "01 45 85 91 23",
@@ -41,6 +43,7 @@
   {
     "id": "studiomatic-pantin",
     "name": "Studiomatic Pantin",
+    "room_count": 1,
     "address": "Pantin (93), proche Porte de la Villette",
     "arrondissement": "Pantin",
     "phone": "",
@@ -60,6 +63,7 @@
   {
     "id": "micadanses",
     "name": "Micadanses",
+    "room_count": 5,
     "address": "15-20 Rue Geoffroy-l'Asnier, 75004 Paris",
     "arrondissement": "4ème",
     "phone": "01 48 87 47 91",
@@ -80,6 +84,7 @@
   {
     "id": "la-place-hiphop",
     "name": "La Place — Centre Culturel Hip Hop",
+    "room_count": 8,
     "address": "10 Passage de la Canopée, Forum des Halles, 75001 Paris",
     "arrondissement": "1er",
     "phone": "01 40 36 38 38",
@@ -99,6 +104,7 @@
   {
     "id": "mains-oeuvres",
     "name": "Mains d'Œuvres",
+    "room_count": 20,
     "address": "1 Rue Charles Garnier, 93400 Saint-Ouen",
     "arrondissement": "Saint-Ouen",
     "phone": "01 40 11 08 07",
@@ -118,6 +124,7 @@
   {
     "id": "planet-live-bondy",
     "name": "Planet Live",
+    "room_count": 6,
     "address": "Bondy (93140), proche Paris",
     "arrondissement": "Bondy",
     "phone": "",
@@ -137,6 +144,7 @@
   {
     "id": "music-live-montrouge",
     "name": "Music Live",
+    "room_count": 5,
     "address": "3 Rue Arthur Auger, 92120 Montrouge",
     "arrondissement": "Montrouge",
     "phone": "01 40 84 97 97",
@@ -156,6 +164,7 @@
   {
     "id": "cite-universitaire-musique",
     "name": "Cité Internationale Universitaire — Studios de Musique",
+    "room_count": 13,
     "address": "17 Boulevard Jourdan, 75014 Paris",
     "arrondissement": "14ème",
     "phone": "01 58 40 83 14",
@@ -175,6 +184,7 @@
   {
     "id": "centre-danse-marais",
     "name": "Centre de Danse du Marais",
+    "room_count": 19,
     "address": "41 Rue du Temple, 75004 Paris",
     "arrondissement": "4ème",
     "phone": "01 42 77 58 19",
@@ -195,6 +205,7 @@
   {
     "id": "centre-danse-alesia",
     "name": "Centre de Danse Alésia",
+    "room_count": 4,
     "address": "119 Avenue du Général Leclerc, 75014 Paris",
     "arrondissement": "14ème",
     "phone": "01 45 43 56 57",
@@ -214,6 +225,7 @@
   {
     "id": "studio-harmonic",
     "name": "Studio Harmonic",
+    "room_count": 7,
     "address": "5 Passage des Taillandiers, 75011 Paris",
     "arrondissement": "11ème",
     "phone": "01 48 07 13 39",
@@ -234,6 +246,7 @@
   {
     "id": "studio-bleu-danse",
     "name": "Studio Bleu — Halls de Danse",
+    "room_count": 25,
     "address": "Plusieurs sites : 10ème, 9ème, 20ème, Pantin",
     "arrondissement": "10ème / 9ème / 20ème / Pantin",
     "phone": "01 45 23 16 03",
@@ -253,6 +266,7 @@
   {
     "id": "wacked-live",
     "name": "Wacked Live",
+    "room_count": 3,
     "address": "32 Boulevard de Sébastopol, 75001 Paris",
     "arrondissement": "1er",
     "phone": "06 50 59 99 89",

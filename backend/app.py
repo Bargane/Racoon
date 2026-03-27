@@ -94,15 +94,20 @@ def generate():
 
     user_prompt = request.json['prompt']
 
-    # Phrase secrète : affiche tous les studios sans appel API
+    # Phrase secrète : affiche tous les studios triés par room_count desc
     if user_prompt.strip().lower() == SECRET_PHRASE:
+        sorted_studios = sorted(
+            STUDIOS_DB,
+            key=lambda s: (s.get("room_count", 0), s.get("capacity_max_persons", 0)),
+            reverse=True
+        )
         results = [
-            {**studio, "relevance_reason": "Mode admin — studio inclus depuis la base de données complète."}
-            for studio in STUDIOS_DB
+            {**studio, "relevance_reason": f"#{i+1} — {studio.get('room_count', '?')} salle(s)"}
+            for i, studio in enumerate(sorted_studios)
         ]
         return jsonify({
             "type": "search_results",
-            "message": "Voici tous les studios de la base de données.",
+            "message": f"Mode admin · {len(results)} studios triés par nombre de salles.",
             "results": results
         })
 
