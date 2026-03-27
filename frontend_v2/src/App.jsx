@@ -12,6 +12,7 @@ import Studios from './pages/Studios';
 import BookingConfirm from './pages/BookingConfirm';
 import Dashboard from './pages/Dashboard';
 import OwnerDashboard from './pages/OwnerDashboard';
+import Payment from './pages/Payment';
 
 const theme = createTheme({
     palette: {
@@ -41,6 +42,9 @@ export default function App() {
                         } />
                         <Route path="/dashboard" element={
                             <ProtectedRoute><Dashboard /></ProtectedRoute>
+                        } />
+                        <Route path="/bookings/:bookingId/pay" element={
+                            <ProtectedRoute><Payment /></ProtectedRoute>
                         } />
                         <Route path="/owner/dashboard" element={
                             <ProtectedRoute><OwnerDashboard /></ProtectedRoute>

@@ -209,6 +209,56 @@ def booking_detail(request, pk):
     return Response(BookingSerializer(booking).data)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def pay_booking(request, pk):
+    booking = get_object_or_404(Booking, pk=pk, artist=request.user)
+
+    if booking.status == 'cancelled':
+        return Response({'detail': 'Réservation annulée.'}, status=status.HTTP_400_BAD_REQUEST)
+    if booking.status == 'confirmed':
+        return Response({'detail': 'Déjà payé.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Validation basique côté serveur (pas de traitement réel — à brancher sur PayPlug/Stripe)
+    card = request.data.get('card_number', '').replace(' ', '')
+    expiry = request.data.get('expiry', '')
+    cvv = request.data.get('cvv', '')
+
+    if not card.isdigit() or len(card) < 15:
+        return Response({'detail': 'Numéro de carte invalide.'}, status=status.HTTP_400_BAD_REQUEST)
+    if not expiry or '/' not in expiry:
+        return Response({'detail': 'Date d\'expiration invalide.'}, status=status.HTTP_400_BAD_REQUEST)
+    if not cvv.isdigit() or len(cvv) < 3:
+        return Response({'detail': 'CVV invalide.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Simule un paiement accepté et confirme la réservation
+    booking.status = 'confirmed'
+    booking.save()
+
+    # Email de confirmation à l'artiste
+    if request.user.email:
+        try:
+            slot = booking.slot
+            send_mail(
+                subject=f"Confirmation de paiement — {slot.room.studio.name}",
+                message=(
+                    f"Bonjour {request.user.username},\n\n"
+                    f"Votre réservation est confirmée !\n\n"
+                    f"Studio : {slot.room.studio.name}\n"
+                    f"Date : {slot.start_time.strftime('%d/%m/%Y à %Hh%M')}\n"
+                    f"Montant débité : {booking.total_price:.2f}€\n\n"
+                    f"À bientôt — Racoon"
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[request.user.email],
+                fail_silently=True,
+            )
+        except Exception:
+            pass
+
+    return Response({'status': 'confirmed', 'total_price': str(booking.total_price)})
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def owner_bookings(request):
