@@ -389,7 +389,7 @@ header p {
 }
 
 .booking-btn {
-    background-color: #2ecc71;
+    background-color: #2a7a5a;
     color: white;
 }
 
@@ -398,6 +398,7 @@ header p {
     color: var(--text-muted-color);
     cursor: default;
     font-size: 0.78rem;
+    pointer-events: none;
 }
 
 .action-btn:not(.disabled):hover {
