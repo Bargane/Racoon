@@ -1,6 +1,10 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 const theme = createTheme({
     palette: {
@@ -17,11 +21,15 @@ export default function App() {
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
-            <BrowserRouter>
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                </Routes>
-            </BrowserRouter>
+            <AuthProvider>
+                <BrowserRouter>
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
+                    </Routes>
+                </BrowserRouter>
+            </AuthProvider>
         </ThemeProvider>
     );
 }

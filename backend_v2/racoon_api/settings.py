@@ -54,10 +54,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'racoon_api.wsgi.application'
 
-# Database — PostgreSQL en prod, SQLite en dev local
+# Database — SQLite en dev local, PostgreSQL en prod
 if os.environ.get('DATABASE_URL'):
     import dj_database_url
     DATABASES = {'default': dj_database_url.config(conn_max_age=600)}
+elif os.environ.get('USE_SQLITE') == 'True':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 else:
     DATABASES = {
         'default': {
@@ -93,11 +100,17 @@ CORS_ALLOWED_ORIGINS = os.environ.get(
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
+}
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 }
 
 # Groq API
