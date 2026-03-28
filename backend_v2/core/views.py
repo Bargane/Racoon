@@ -172,7 +172,8 @@ def bookings_list(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     slot = serializer.validated_data['slot']
-    duration_h = (slot.end_time - slot.start_time).total_seconds() / 3600
+    from decimal import Decimal
+    duration_h = Decimal((slot.end_time - slot.start_time).total_seconds()) / Decimal(3600)
     total = slot.room.price_per_hour * duration_h
 
     booking = serializer.save(artist=request.user, total_price=total)

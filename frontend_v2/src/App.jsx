@@ -32,13 +32,64 @@ export default function App() {
     const theme = useMemo(() => createTheme({
         palette: {
             mode,
-            primary: { main: '#2a7a5a' },
-            secondary: { main: '#8c9298' },
+            primary: { main: '#2a7a5a', light: '#3da373', dark: '#1d5740' },
+            secondary: { main: '#f5a623', light: '#f7ba55', dark: '#c07d0a' },
+            background: {
+                default: mode === 'light' ? '#f8f9fa' : '#0f1a15',
+                paper: mode === 'light' ? '#ffffff' : '#1a2b22',
+            },
+            text: {
+                primary: mode === 'light' ? '#1a2420' : '#e8f0ec',
+                secondary: mode === 'light' ? '#5a7068' : '#8aab9a',
+            },
         },
         typography: {
             fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+            h1: { fontWeight: 800, letterSpacing: '-1px' },
+            h2: { fontWeight: 800, letterSpacing: '-0.5px' },
+            h3: { fontWeight: 700, letterSpacing: '-0.5px' },
+            h4: { fontWeight: 700 },
+            h5: { fontWeight: 700 },
+            h6: { fontWeight: 600 },
+            button: { fontWeight: 600, textTransform: 'none' },
         },
         shape: { borderRadius: 10 },
+        spacing: 8,
+        components: {
+            MuiButton: {
+                defaultProps: { disableElevation: true },
+                styleOverrides: {
+                    root: { borderRadius: 8, padding: '8px 20px' },
+                    sizeSmall: { padding: '5px 14px', fontSize: '0.8rem' },
+                    sizeLarge: { padding: '12px 28px', fontSize: '1rem' },
+                },
+            },
+            MuiCard: {
+                defaultProps: { elevation: 0 },
+                styleOverrides: {
+                    root: ({ theme }) => ({
+                        border: `1px solid ${theme.palette.divider}`,
+                        transition: 'box-shadow 0.2s, transform 0.2s',
+                        '&:hover': { boxShadow: '0 4px 20px rgba(0,0,0,0.08)', transform: 'translateY(-2px)' },
+                    }),
+                },
+            },
+            MuiTextField: {
+                defaultProps: { size: 'small' },
+            },
+            MuiChip: {
+                styleOverrides: { root: { fontWeight: 600 } },
+            },
+            MuiAppBar: {
+                styleOverrides: {
+                    root: ({ theme }) => ({
+                        backgroundColor: theme.palette.mode === 'light'
+                            ? 'rgba(255,255,255,0.85)'
+                            : 'rgba(26,43,34,0.85)',
+                    }),
+                },
+            },
+        },
     }), [mode]);
 
     return (
