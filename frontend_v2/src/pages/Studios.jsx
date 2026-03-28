@@ -2,15 +2,17 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Box, Typography, TextField, MenuItem, Button, Grid,
-    Card, CardContent, CardActionArea, Chip, CircularProgress
+    Chip, CircularProgress, Paper, Stack,
 } from '@mui/material';
+import TuneIcon from '@mui/icons-material/Tune';
 import api from '../api';
 import Layout from '../components/Layout';
+import { StudioCard } from './Home';
 
 const ROOM_TYPES = [
-    { value: '', label: 'Tous' },
-    { value: 'music', label: 'Musique' },
-    { value: 'dance', label: 'Danse' },
+    { value: '', label: 'Tous types' },
+    { value: 'music', label: '🎸 Musique' },
+    { value: 'dance', label: '💃 Danse' },
 ];
 
 export default function Studios() {
@@ -31,80 +33,82 @@ export default function Studios() {
 
     const set = (field) => (e) => setFilters(f => ({ ...f, [field]: e.target.value }));
 
+    const activeFiltersCount = Object.values(filters).filter(v => v !== '').length;
+
     return (
         <Layout>
-            {/* Barre de filtres */}
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 4, alignItems: 'flex-end' }}>
-                <TextField select label="Type" value={filters.type} onChange={set('type')} sx={{ minWidth: 130 }}>
-                    {ROOM_TYPES.map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
-                </TextField>
-                <TextField
-                    label="Date"
-                    type="date"
-                    value={filters.date}
-                    onChange={set('date')}
-                    InputLabelProps={{ shrink: true }}
-                    sx={{ minWidth: 160 }}
-                />
-                <TextField
-                    label="Personnes (min)"
-                    type="number"
-                    value={filters.capacity}
-                    onChange={set('capacity')}
-                    sx={{ width: 150 }}
-                    inputProps={{ min: 1 }}
-                />
-                <TextField
-                    label="Budget max (€/h)"
-                    type="number"
-                    value={filters.price_max}
-                    onChange={set('price_max')}
-                    sx={{ width: 160 }}
-                    inputProps={{ min: 0 }}
-                />
-                <Button variant="contained" disableElevation onClick={() => search()}>
-                    Rechercher
-                </Button>
+            <Box sx={{ mb: 4 }}>
+                <Typography variant="h5" fontWeight={800} gutterBottom>Studios à Paris</Typography>
+                <Typography variant="body2" color="text.secondary">
+                    {studios.length > 0 && !loading ? `${studios.length} studio${studios.length > 1 ? 's' : ''} disponible${studios.length > 1 ? 's' : ''}` : 'Chargement...'}
+                </Typography>
             </Box>
 
+            {/* Filtres */}
+            <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: 2, mb: 4 }}>
+                <Stack direction="row" alignItems="center" gap={1} mb={2}>
+                    <TuneIcon fontSize="small" color="action" />
+                    <Typography variant="body2" fontWeight={600}>Filtres</Typography>
+                    {activeFiltersCount > 0 && (
+                        <Chip
+                            label={activeFiltersCount}
+                            size="small"
+                            color="primary"
+                            sx={{ height: 18, fontSize: '0.65rem' }}
+                        />
+                    )}
+                </Stack>
+                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                    <TextField
+                        select label="Type" value={filters.type} onChange={set('type')}
+                        size="small" sx={{ minWidth: 150 }}
+                    >
+                        {ROOM_TYPES.map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
+                    </TextField>
+                    <TextField
+                        label="Date" type="date" value={filters.date} onChange={set('date')}
+                        size="small" InputLabelProps={{ shrink: true }} sx={{ minWidth: 160 }}
+                    />
+                    <TextField
+                        label="Personnes (min)" type="number" value={filters.capacity} onChange={set('capacity')}
+                        size="small" sx={{ width: 150 }} inputProps={{ min: 1 }}
+                    />
+                    <TextField
+                        label="Budget max (€/h)" type="number" value={filters.price_max} onChange={set('price_max')}
+                        size="small" sx={{ width: 160 }} inputProps={{ min: 0 }}
+                    />
+                    <Button variant="contained" disableElevation onClick={() => search()} sx={{ fontWeight: 600 }}>
+                        Rechercher
+                    </Button>
+                    {activeFiltersCount > 0 && (
+                        <Button
+                            variant="text" color="inherit" size="small"
+                            onClick={() => { const f = { type: '', date: '', capacity: '', price_max: '' }; setFilters(f); search(f); }}
+                        >
+                            Réinitialiser
+                        </Button>
+                    )}
+                </Box>
+            </Paper>
+
+            {/* Résultats */}
             {loading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
                     <CircularProgress />
                 </Box>
             ) : studios.length === 0 ? (
-                <Typography color="text.secondary">Aucun studio trouvé.</Typography>
+                <Box sx={{ textAlign: 'center', py: 10 }}>
+                    <Typography variant="h6" color="text.secondary" gutterBottom>Aucun studio trouvé</Typography>
+                    <Typography variant="body2" color="text.secondary">Essayez de modifier vos filtres.</Typography>
+                </Box>
             ) : (
-                <>
-                    <Typography variant="body2" color="text.secondary" mb={2}>
-                        {studios.length} studio{studios.length > 1 ? 's' : ''} trouvé{studios.length > 1 ? 's' : ''}
-                    </Typography>
-                    <Grid container spacing={2}>
-                        {studios.map(studio => (
-                            <Grid item xs={12} sm={6} md={4} key={studio.id}>
-                                <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', height: '100%' }}>
-                                    <CardActionArea onClick={() => navigate(`/studios/${studio.id}`)} sx={{ height: '100%' }}>
-                                        <CardContent>
-                                            <Typography variant="h6" fontWeight={700} gutterBottom noWrap>
-                                                {studio.name}
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary" gutterBottom>
-                                                {studio.address}
-                                            </Typography>
-                                            {studio.arrondissement && (
-                                                <Chip label={studio.arrondissement} size="small" sx={{ mb: 1 }} />
-                                            )}
-                                            {studio.price_range && (
-                                                <Typography variant="body2" fontWeight={600} color="primary">
-                                                    {studio.price_range}
-                                                </Typography>
-                                            )}
-                                        </CardContent>
-                                    </CardActionArea>
-                                </Card>
-                            </Grid>
-                        ))}
-                    </Grid>
-                </>
+                <Grid container spacing={3}>
+                    {studios.map(studio => (
+                        <Grid item xs={12} sm={6} md={4} key={studio.id}>
+                            <StudioCard studio={studio} onClick={() => navigate(`/studios/${studio.id}`)} />
+                        </Grid>
+                    ))}
+                </Grid>
             )}
         </Layout>
     );
